@@ -1,12 +1,12 @@
 up:
 	chmod +x db/01_init.sh
-	sudo docker compose up --build -db
+	sudo docker compose up --build -d
 
 down:
-	docker compose down
+	sudo docker compose down
 
 reset:
-	docker compose down -v
+	sudo docker compose down -v
 
 logs: 
-	docker compose logs -f
+	sudo docker compose logs -f
