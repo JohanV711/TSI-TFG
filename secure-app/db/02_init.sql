@@ -1,6 +1,10 @@
 -- Archivo para creación y primera configuración de la base de datos de Secure-app
--- Usada por docker compose para desplegar un contenedor PostgreSQL.
+-- Usada por el docker compose de la carpeta secure-app para desplegar un contenedor PostgreSQL.
 
+--Esto evita que usuarios puedan crear tablas nuevas por accidente o malicia.
+REVOKE CREATE ON SCHEMA public FROM PUBLIC;
+
+--Extensión para generar UUIDs.
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 CREATE TABLE IF NOT EXISTS users(
@@ -20,7 +24,6 @@ CREATE TABLE IF NOT EXISTS albums(
     unique(user_id, name)
 );
 
-
 CREATE TABLE IF NOT EXISTS photos(
     photo_id UUID PRIMARY KEY DEFAULT gen_random_uuid(), 
     album_id UUID NOT NULL REFERENCES albums(album_id) ON DELETE CASCADE,
@@ -38,6 +41,16 @@ CREATE TABLE IF NOT EXISTS token_blacklist(
     user_id UUID NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
     expires_at TIMESTAMP WITH TIME ZONE NOT NULL
 );
+
+-- Conceder permisos mínimos a app_user
+GRANT CONNECT ON DATABASE secureapp_db TO app_user;
+GRANT USAGE ON SCHEMA public TO app_user;
+
+-- Permisos en las tablas.
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE users TO app_user;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE albums TO app_user;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE photos TO app_user;
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE token_blacklist TO app_user;
 
 -- Posible mejora: añadir índices para mejorar rendimiento en caso de que aumente
 --significativamente el número de fotos.

@@ -2,11 +2,11 @@ services:
   db:
       image: postgres:16
       volumes:
-        - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+        - ./db/01_init.sh:/docker-entrypoint-initdb.d/01_init.sh
+        - ./db/02_init.sql:/docker-entrypoint-initdb.d/02_init.sql
         - postgres_data:/var/lib/postgresql/data
       env_file:
         - .env 
-
 
 volumes:
   postgres_data:
