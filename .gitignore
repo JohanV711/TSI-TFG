@@ -1,0 +1,4 @@
+#Ignorar variables de entorno reales.
+.env
+*.env
+!*.env.example
