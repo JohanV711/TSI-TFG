@@ -5,6 +5,9 @@ up:
 down:
 	sudo docker compose down
 
+stop:
+	sudo docker compose stop
+
 reset:
 	sudo docker compose down -v
 

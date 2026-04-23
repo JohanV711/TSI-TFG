@@ -7,6 +7,28 @@ services:
         - postgres_data:/var/lib/postgresql/data
       env_file:
         - .env 
+      networks:
+        - secure-app_default
+      #No se ponen ports porque la BD no va a ser accesible desde el exterior.
+
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000" #SÓLO PARA DESARROLLO, quitarlo cuando se termine.
+    volumes:
+      - uploads_data:/app/uploads
+      - ./backend/app:/app/app #SÓLO PARA DESARROLLO, para que se reflejen los cambios que se hagan en backend/app directamente dentro del contenedor.
+    env_file:
+      - .env
+    depends_on:
+      - db
+    networks:
+      - secure-app_default
+
+networks:
+  secure-app_default:
+    driver: bridge
 
 volumes:
   postgres_data:
+  uploads_data:

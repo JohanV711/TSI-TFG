@@ -2,3 +2,17 @@
 .env
 *.env
 !*.env.example
+
+#Archivos subidos por el usuario.
+secure-app/backend/uploads/
+
+#Docker
+postgres_data
+
+#Pyhton
+__pycache__/
+venv/
+env/
+.venv/
+.pytest_cache/
+.mypy_cache/

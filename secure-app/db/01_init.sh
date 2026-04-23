@@ -6,6 +6,7 @@
 set -e
 
 #psql -v ON_ERROR_STOP=1 hace que psql se pare al primer fallo SQL.
+#Entramos a la base de datos con usuario amin para crear un nuevo usuario llamado app_user y asignarle su contraseña
 psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
     CREATE ROLE ${APP_USER} WITH LOGIN PASSWORD '${APP_USER_PASSWORD}';
 EOSQL
