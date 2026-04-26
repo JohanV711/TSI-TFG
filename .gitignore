@@ -8,6 +8,8 @@ secure-app/backend/uploads/
 
 #Docker
 postgres_data
+#Override local del compose.
+docker-compose.override.yml
 
 #Pyhton
 __pycache__/
