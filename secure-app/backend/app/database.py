@@ -1,19 +1,10 @@
 from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
-from dotenv import load_dotenv
-import os
+from sqlalchemy.orm import sessionmaker, declarative_base
+from .configuration import settings
 import sys
 
-load_dotenv()
-DATABASE_URL=os.getenv("DATABASE_URL")
-
-if not DATABASE_URL:
-    print("Error: la URL de la base de datos no ha sido encontrada.")
-    sys.exit(1)
-
 engine=create_engine(
-    DATABASE_URL,
+    settings.DATABASE_URL,
     pool_size=5,
     max_overflow=10,
     pool_timeout=30,
@@ -31,3 +22,4 @@ def get_db():
         yield db
     finally:
         db.close()
+
