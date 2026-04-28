@@ -1,8 +1,17 @@
+#Como python no "habla" SQL directamente, hay que usar un ORM (Object RelationalMapping) que ayuda a un lenguaje de programación orientado a objetos a trabajar con bases de datos.
+#Por eso este archivo básicamente crea las tablas de la base de datos para que las "entienda" Python.
+
+#Importa la librería uuid para generar indetificadores únicos universales.
 import uuid
+#Tipos de columnas y restricciones.
 from sqlalchemy import Column, String, Boolean, ForeignKey, Integer, Text, DateTime, UniqueConstraint
+#Importa el tipo UUID de PostgreSQL.
 from sqlalchemy.dialects.postgresql import UUID
+#Permite usar funciones SQL como NOW().
 from sqlalchemy.sql import func
+#Para las relaciones entre tablas.
 from sqlalchemy.orm import relationship
+#importa la clase Base que definimos en database.py, todas las tablas heredarán de este clase, por eso todas las clases tienen entre paréntesis la palabra Base.
 from .database import Base
 
 class User(Base):
