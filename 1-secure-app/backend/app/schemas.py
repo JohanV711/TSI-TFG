@@ -56,7 +56,7 @@ class LoginRequest(BaseModel):
 #Define cómo se va a entregar el token al usuario después del login.
 class Token(BaseModel):
     access_token: str
-    token_type: str="bearer"
+    token_type: str="bearer" #"Bearer" es el estándar de seguridad para JWT.
 
 class TokenDatos(BaseModel):
     #este se usará para "leer" lo que hay dentro del token del usuario que esté ya autenticado.

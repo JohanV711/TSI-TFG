@@ -10,7 +10,7 @@ models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Secure-app API",
     docs_url="/docs", redoc_url="/redoc", #desactivar el SWAGGER en producción.
-    #root_path="/proxy/8000" #Para servidor remoto de desarrollo, cosas de desarrollo, comentar cuando no se necesite.
+    #root_path="/proxy/8000" #Para servidor remoto de desarrollo , cosas de desarrollo, comentar cuando no se necesite.
     ) 
 
 def get_db():
