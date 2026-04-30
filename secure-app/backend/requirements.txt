@@ -9,3 +9,5 @@ python-dotenv==1.0.1
 psycopg2-binary==2.9.9
 python-multipart==0.0.20
 pillow==10.4.0
+email-validator
+python-jose[cryptography]
