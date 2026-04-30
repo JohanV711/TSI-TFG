@@ -15,7 +15,7 @@ import re #Librería de expresions regulares de Python.
 #"Contrato" para cuando alguien se registra.
 class UserCreate(BaseModel):
     email: EmailStr     #Comprueba que el email tiene formato (@) y dominio correcto.
-    password: str       #&recibirá la contraseña como texto (String).
+    password: str       #recibirá la contraseña como texto (String).
 
     @field_validator("password") #Decorador que le dice a Pydantic que antes de pasar el dato debe ejecutarse esta función llamada field_validator
     @classmethod #necesario por Pydantic para que el validador funcione a nivel de clase.

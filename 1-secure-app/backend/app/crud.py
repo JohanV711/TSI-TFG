@@ -59,3 +59,5 @@ def is_token_in_blacklist(db: Sesion, jti: str)->bool:
     return db.query(models.TokenBlacklist).filter(
         models.TokenBlacklist.jti==jti
     ).first() is not None
+
+

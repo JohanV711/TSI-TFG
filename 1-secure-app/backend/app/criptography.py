@@ -45,7 +45,7 @@ def create_access_token(subject: str)->tuple[str, str]:
     #Se devuelven el token y el jti para hacer cosas con ellos.
     return token, jti
 
-def decode_access_token(token: str) -> Optional[dict]:
+def decode_access_token(token: str) -> dict:
     #Función importante que comprueba que el Token es auténtico.
     #Lo decodifica y maneja errores de seguridad.
     try:
@@ -60,16 +60,12 @@ def decode_access_token(token: str) -> Optional[dict]:
 
     except ExpiredSignatureError:
         #Token caducado.
-        print("Error, el token ha expirado.")
-        return None
+        print("Error, el token ha expirado.")       #REEMPLAZAR por logging en producción
+        raise
     
     except InvalidTokenError:
         #en caso de que el token haya sido manipulado.
-        print("Error, token inválido o manipulado.")
-        return None
+        print("Error, token inválido o manipulado.")    #REEMPLAZAR por logging en producción
+        raise
 
-    except Exception as e:
-        #Cualquier error inesperado.
-        print(f"Error inesperado al decodificar el token {e}")
-        return None
 
