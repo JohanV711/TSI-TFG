@@ -5,6 +5,10 @@ up:
 down:
 	sudo docker compose down
 
+destroy:
+	sudo docker compose down
+	#Eliminar volúmenes, redes, imágenes todo.
+
 stop:
 	sudo docker compose stop
 

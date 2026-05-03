@@ -3,22 +3,18 @@ from fastapi.middleware.cors import CORSMiddleware
 from .configuration import settings
 from .database import engine
 from . import models
+from .routers import authentication, albums, photos
+import os #para pruebas de Johan, eliminar.
 
+PROXY_PATH=os.getenv("PROXY_ROOT_PATH", "") 
 
-#Crea las tablas en caso de que no existan.
+#Esto crea las tablas en caso de que no existan.
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Secure-app API",
     docs_url="/docs", redoc_url="/redoc", #desactivar el SWAGGER en producción.
-    #root_path="/proxy/8000" #Para servidor remoto de desarrollo , cosas de desarrollo, comentar cuando no se necesite.
+    root_path=PROXY_PATH #Para servidor remoto de desarrollo , cosas de desarrollo, comentar cuando no se necesite.
     ) 
-
-def get_db():
-    db = database.SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 #CORS permite el origen del frontend.
 app.add_middleware(
@@ -28,3 +24,12 @@ app.add_middleware(
     allow_methods=["GET","POST", "PUT", "DELETE"],
     allow_headers=["Authorization", "Content-Type"]
 )
+
+app.include_router(authentication.router, prefix="/api/auth", tags=["Autenticación"])
+app.include_router(albums.router, prefix="/api/albums", tags=["Álbunes"])
+app.include_router(photos.router, prefix="/api/photos", tags=["Fotos"])
+
+@app.get("/", tags=["General"])
+def read_root():
+    return {"message":"API de secure-app funcionando"}
+
