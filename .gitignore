@@ -18,3 +18,24 @@ env/
 .venv/
 .pytest_cache/
 .mypy_cache/
+*.pyc
+*.pyo
+*.pyd
+.env
+
+#Vagrant y virtualbox.
+.vagrant/
+*.vbox
+*.vbox-prev
+*.vdi
+*.vmdk
+*.vhd
+*.vhdx
+*.log
+*~
+*.swp
+
+#frontend
+node_modules/
+dist/
+build/

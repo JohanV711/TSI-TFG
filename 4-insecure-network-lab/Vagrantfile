@@ -1,0 +1,71 @@
+Vagrant.configure("2") do |config|
+
+    #Máquina virtual externa con Kali Linux.
+    config.vm.define "external-kali" do |kali|
+        kali.vm.box ="kalilinux/rolling"
+        kali.vm.box_check_update=false
+        kali.vm.hostname="external-kali"
+        
+        kali.vm.network "private_network", ip: "100.70.9.10", virtualbox__intnet: "net-externa", auto_config: true
+
+        kali.vm.provider "virtualbox" do |vb|
+            vb.name ="external-kali-mv"
+            vb.memory=1024 
+            vb.cpus=1
+            vb.gui=false
+            vb.customize ["modifyvm", :id, "--audio", "none"]
+            vb.customize ["modifyvm", :id, "--usb", "off"]
+            vb.customize ["modifyvm", :id, "--vram", "8"]
+        end
+
+        kali.vm.provision "shell",
+            path: "scripts/external-kali/setup.sh", privileged: true
+    end
+
+    # Máquina virtual del servidor de la red interna.
+    config.vm.define "internal-server" do |internal|
+        internal.vm.box= "ubuntu/jammy64"
+        internal.vm.box_check_update=false
+        internal.vm.hostname="internal-server"
+        internal.vm.network "private_network", ip: "192.168.58.10", virtualbox__intnet: "net-interna"
+        internal.vm.provider "virtualbox" do |vb|
+            vb.memory=512
+            vb.cpus=1
+            vb.name="insecure-internal-vm"
+        end
+        internal.vm.provision "shell", path: "scripts/internal-server/setup.sh", privileged:true
+        internal.vm.provision "shell", path: "scripts/internal-server/data.sh", privileged:true
+    end
+
+    #Máquina virtual para el firewall vulnerable.
+    config.vm.define "firewall" do |fw|
+        fw.vm.box="ubuntu/jammy64"
+        fw.vm.box_check_update=false
+        fw.vm.hostname="firewall"
+        fw.vm.network "private_network", ip: "100.70.9.1", virtualbox__intnet: "net-externa"
+        fw.vm.network "private_network", ip: "192.168.57.1", virtualbox__intnet: "net-dmz"
+        fw.vm.network "private_network", ip: "192.168.58.1", virtualbox__intnet: "net-interna"
+        fw.vm.provider "virtualbox" do |vb|
+            vb.memory=512
+            vb.cpus=1
+            vb.name="insecure-firewall"
+        end
+        fw.vm.provision "shell", path: "scripts/firewall/setup.sh"
+    end
+
+    #Máquina virtual para el servidor DMZ.
+    config.vm.define "dmz-server" do |dmz|
+        dmz.vm.box="ubuntu/jammy64"
+        dmz.vm.hostname="dmz-server"
+        dmz.vm.network "private_network", ip: "192.168.57.10", virtualbox__intnet: "net-dmz"
+        dmz.vm.provider "virtualbox" do |vb|
+            vb.memory=512
+            vb.cpus=1
+            vb.name="dmz-server-vm"
+        end
+        dmz.vm.provision "shell", path: "scripts/dmz-server/setup.sh", privileged:true
+        dmz.vm.provision "shell", path: "scripts/dmz-server/config.sh", privileged:true
+
+    end
+    
+end

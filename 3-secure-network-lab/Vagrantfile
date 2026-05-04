@@ -1,0 +1,14 @@
+Vagrant.configure("2") do |config|
+    #Máquina virtual para firewall Opnsense
+    # Primero configuraré el opensense directamente desde la interfaz web con la 
+    #infraestructura ya hecha y luego guardaré el fichero xml con la configuración completa.
+
+    #Máquina virtual para red interna
+
+    #Máquina virtual para VLAN 10
+
+    #Máquina virtual para VLAN 20
+
+    #Máquina virtual para computador en red interna
+
+end
