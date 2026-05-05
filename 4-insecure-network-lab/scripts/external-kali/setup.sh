@@ -16,6 +16,13 @@ ettercap-text-only \
 telnet \
 ftp
 
+nmcli connection modify "Wired connection 1" \
+ipv4.addresses "100.70.9.10/24" \
+ipv4.method manual || true
+nmcli connection up "Wired connection 1" || true
+sleep 2
+ip addr show eth1
+
 #El atacante no hace routing, solo escucha, por eso ip_forward desactivado.
 sysctl -w net.ipv4.ip_forward=0
 echo "net.ipv4.ip_forward=0">/etc/sysctl.d/99-kali-lab.conf

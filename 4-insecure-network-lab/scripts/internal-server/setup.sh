@@ -72,7 +72,7 @@ echo "[internal-server] Setup completado."
 ip route add 192.168.57.0/24 via 192.168.58.1 || true
 ip route add 100.70.9.0/24 via 192.168.58.1 || true
 
-cat >> /etc/netplan/50-cloud-init.yaml << 'EOF'
+cat >> /etc/netplan/99-lab-routes.yaml << 'EOF'
 network:
   version: 2
   ethernets:

@@ -9,14 +9,14 @@
 set -euo pipefail
 export DEBIAN_FRONTEND=noninteractive
 
+# Paquetes necesarios
+apt-get update -qq
+apt-get install -y -qq iptables iptables-persistent
+
 EXT_IFACE=$(ip -br addr | awk '/100\.70\.9\.1/ {print $1}')
 DMZ_IFACE=$(ip -br addr | awk '/192\.168\.57\.1/ {print $1}')
 INT_IFACE=$(ip -br addr | awk '/192\.168\.58\.1/ {print $1}')
 echo "Interfaces detectadas: ext=$EXT_IFACE dmz=$DMZ_IFACE int=$INT_IFACE"
-
-# Paquetes necesarios
-apt-get update -qq
-apt-get install -y -qq iptables iptables-persistent
 
 #Habilitar ip_forward de forma permanente.
 # En un firewall real estaría restringido por rutas y reglas.
