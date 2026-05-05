@@ -31,8 +31,10 @@ systemctl restart ssh
 
 #Mysql sin autenticación t accesible desde cualquier IP
 sed -i 's/^bind-address\s*=.*/bind-address=0.0.0.0/' \
-/etc/mysql/mysql.conf.d/mysqld.conf
-systemctl restart mysql
+/etc/mysql/mysql.conf.d/mysqld.cnf
+systemctl start mysql
+sleep 10
+systemctl is-active --quiet mysql
 
 #Quitar contraseña root mysql.
 mysql -u root << 'SQL'
@@ -66,4 +68,20 @@ ufw disable || true
 echo "[internal-server] Setup completado."
 
 
+#Rutas:
+ip route add 192.168.57.0/24 via 192.168.58.1 || true
+ip route add 100.70.9.0/24 via 192.168.58.1 || true
 
+cat >> /etc/netplan/50-cloud-init.yaml << 'EOF'
+network:
+  version: 2
+  ethernets:
+    eth1:
+      routes:
+        - to: 192.168.57.0/24
+          via: 192.168.58.1
+        - to: 100.70.9.0/24
+          via: 192.168.58.1
+EOF
+netplan apply || true
+echo "rutas de internal-server configuradas correctmanete"

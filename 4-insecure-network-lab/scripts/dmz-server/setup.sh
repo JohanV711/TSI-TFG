@@ -20,7 +20,7 @@ ServerTokens Full
 ServerSignature On
 
 <Directory /var/www/html>
-    Options INdexes FollowSymLinks
+    Options Indexes FollowSymLinks
     AllowOverride None
     Require all granted
 </Directory>
@@ -71,11 +71,28 @@ EOF
 systemctl restart xinetd
 
 #Usuario débil para Telnet y FTP con credenciales por defecto.
-useradd -m -s /bin/bash operator
-echo "operator:operator" | chpasswd
-
+id ftpoperator || useradd -m -s /bin/bash ftpoperator
+echo "ftpoperator:ftpoperator" | chpasswd
 #Quitar firewall local
 ufw disable || true
 echo "[dmz-server] setup completado."
 
+
+#Ruta hacia red interna pasando por el firewall:
+ip route add 192.168.58.0/24 via 192.168.57.1 || true
+ip route add 100.70.9.0/24 via 192.168.57.1 || true
+
+cat >> /etc/netplan/50-cloud-init.yaml << 'EOF'
+network:
+  version: 2
+  ethernets:
+    eth1:
+      routes:
+        - to: 192.168.58.0/24
+          via: 192.168.57.1
+        - to: 100.70.9.0/24
+          via: 192.168.57.1
+EOF
+netplan apply || true
+echo "rutas de dmz-server configuradas correctmanete"
 

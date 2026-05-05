@@ -29,7 +29,7 @@ Vagrant.configure("2") do |config|
         internal.vm.hostname="internal-server"
         internal.vm.network "private_network", ip: "192.168.58.10", virtualbox__intnet: "net-interna"
         internal.vm.provider "virtualbox" do |vb|
-            vb.memory=512
+            vb.memory=2048
             vb.cpus=1
             vb.name="insecure-internal-vm"
         end
@@ -42,9 +42,9 @@ Vagrant.configure("2") do |config|
         fw.vm.box="ubuntu/jammy64"
         fw.vm.box_check_update=false
         fw.vm.hostname="firewall"
-        fw.vm.network "private_network", ip: "100.70.9.1", virtualbox__intnet: "net-externa"
-        fw.vm.network "private_network", ip: "192.168.57.1", virtualbox__intnet: "net-dmz"
-        fw.vm.network "private_network", ip: "192.168.58.1", virtualbox__intnet: "net-interna"
+        fw.vm.network "private_network", ip: "100.70.9.1", virtualbox__intnet: "net-externa", virtualbox__nictype: "82540EM"
+        fw.vm.network "private_network", ip: "192.168.57.1", virtualbox__intnet: "net-dmz", virtualbox__nictype: "82540EM"
+        fw.vm.network "private_network", ip: "192.168.58.1", virtualbox__intnet: "net-interna", virtualbox__nictype: "82540EM"
         fw.vm.provider "virtualbox" do |vb|
             vb.memory=512
             vb.cpus=1
@@ -56,6 +56,7 @@ Vagrant.configure("2") do |config|
     #Máquina virtual para el servidor DMZ.
     config.vm.define "dmz-server" do |dmz|
         dmz.vm.box="ubuntu/jammy64"
+        dmz.vm.box_check_update=false
         dmz.vm.hostname="dmz-server"
         dmz.vm.network "private_network", ip: "192.168.57.10", virtualbox__intnet: "net-dmz"
         dmz.vm.provider "virtualbox" do |vb|

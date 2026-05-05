@@ -9,6 +9,11 @@
 set -euo pipefail
 export DEBIAN_FRONTEND=noninteractive
 
+EXT_IFACE=$(ip -br addr | awk '/100\.70\.9\.1/ {print $1}')
+DMZ_IFACE=$(ip -br addr | awk '/192\.168\.57\.1/ {print $1}')
+INT_IFACE=$(ip -br addr | awk '/192\.168\.58\.1/ {print $1}')
+echo "Interfaces detectadas: ext=$EXT_IFACE dmz=$DMZ_IFACE int=$INT_IFACE"
+
 # Paquetes necesarios
 apt-get update -qq
 apt-get install -y -qq iptables iptables-persistent
@@ -45,18 +50,18 @@ iptables -P OUTPUT ACCEPT
 iptables -P FORWARD ACCEPT
 
 # Reglas explícitas permisivas.
-iptables -A FORWARD -i eth1 -o eth2 -j ACCEPT # externo → DMZ
-iptables -A FORWARD -i eth1 -o eth3 -j ACCEPT # externo → interno 
-iptables -A FORWARD -i eth2 -o eth3 -j ACCEPT # DMZ → interno 
-iptables -A FORWARD -i eth2 -o eth1 -j ACCEPT
-iptables -A FORWARD -i eth3 -o eth1 -j ACCEPT
-iptables -A FORWARD -i eth3 -o eth2 -j ACCEPT
+iptables -A FORWARD -i $EXT_IFACE -o $DMZ_IFACE -j ACCEPT # externo → DMZ
+iptables -A FORWARD -i $EXT_IFACE -o $INT_IFACE -j ACCEPT # externo → interno 
+iptables -A FORWARD -i $DMZ_IFACE -o $INT_IFACE -j ACCEPT # DMZ → interno 
+iptables -A FORWARD -i $DMZ_IFACE -o $EXT_IFACE -j ACCEPT
+iptables -A FORWARD -i $INT_IFACE -o $EXT_IFACE -j ACCEPT
+iptables -A FORWARD -i $INT_IFACE -o $DMZ_IFACE -j ACCEPT
 
 # NAT para que los segmentos internos puedan
 # comunicarse usando la IP del firewall como gateway
-iptables -t nat -A POSTROUTING -o eth1 -j MASQUERADE
-iptables -t nat -A POSTROUTING -o eth2 -j MASQUERADE
-iptables -t nat -A POSTROUTING -o eth3 -j MASQUERADE
+iptables -t nat -A POSTROUTING -o $EXT_IFACE -j MASQUERADE
+iptables -t nat -A POSTROUTING -o $DMZ_IFACE -j MASQUERADE
+iptables -t nat -A POSTROUTING -o $INT_IFACE -j MASQUERADE
 
 # Sin reglas de logging, si se ataca no queda rastro.
 # 4. Persistir reglas entre reinicios

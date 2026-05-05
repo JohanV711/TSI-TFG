@@ -21,7 +21,7 @@ sysctl -w net.ipv4.ip_forward=0
 echo "net.ipv4.ip_forward=0">/etc/sysctl.d/99-kali-lab.conf
 
 #Crear directorios de trabajo del atacante para guardar datos.
-mkdir -p /home/vagrant/lab/{recon, captures, exploits}
+mkdir -p /home/vagrant/lab/{recon,captures,exploits}
 chown -R vagrant:vagrant /home/vagrant/lab
 
 #Alias para las prácticas.
@@ -35,3 +35,6 @@ EOF
 
 echo "[external-kali] Provisioning completado."
 
+ip route add 192.168.57.0/24 via 100.70.9.1 || true
+ip route add 192.168.58.0/24 via 100.70.9.1 || true
+echo "[external-kali] rutas completado."

@@ -60,10 +60,13 @@ EOF
 mkdir -p /var/www/html/backup
 cat > /var/www/html/backup/credentials.txt << 'EOF'
 MySQL root: 
-FTP operator: operator/operator
+FTP operator: ftpoperator/ftpoperator
 SSH interno: root/root
 VPN admin: admin/admin123
 EOF
+
+id ftpoperator || useradd -m -s /bin/bash ftpoperator
+echo "ftpoperator:operator" | chpasswd
 
 cat > /var/www/html/backup/network.txt << 'EOF'
 Firewall: 100.70.9.1
