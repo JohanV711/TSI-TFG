@@ -12,6 +12,7 @@ apt-get update -qq
 apt-get install -y -qq \
 netdiscover \
 dsniff \
+nmap -y \
 ettercap-text-only \
 telnet \
 ftp
