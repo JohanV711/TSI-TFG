@@ -75,24 +75,28 @@ id ftpoperator || useradd -m -s /bin/bash ftpoperator
 echo "ftpoperator:ftpoperator" | chpasswd
 #Quitar firewall local
 ufw disable || true
-echo "[dmz-server] setup completado."
 
 
-#Ruta hacia red interna pasando por el firewall:
+
+# Detectar interfaz de la red DMZ (la que tiene 192.168.57.x)
+DMZ_IFACE=$(ip -br addr | awk '/192\.168\.57\./ {print $1}')
+echo "Interfaz DMZ detectada: $DMZ_IFACE"
+
 ip route add 192.168.58.0/24 via 192.168.57.1 || true
-ip route add 100.70.9.0/24 via 192.168.57.1 || true
+ip route add 100.70.9.0/24   via 192.168.57.1 || true
 
-cat >> /etc/netplan/99-lab-routes.yaml << 'EOF'
+cat > /etc/netplan/99-lab-routes.yaml << EOF
 network:
   version: 2
   ethernets:
-    eth1:
+    ${DMZ_IFACE}:
       routes:
         - to: 192.168.58.0/24
           via: 192.168.57.1
         - to: 100.70.9.0/24
           via: 192.168.57.1
 EOF
-netplan apply || true
-echo "rutas de dmz-server configuradas correctmanete"
+netplan apply
+echo "[dmz-server] rutas configuradas en $DMZ_IFACE"
 
+echo "[dmz-server] setup completado."

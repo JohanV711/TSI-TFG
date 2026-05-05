@@ -16,12 +16,18 @@ ettercap-text-only \
 telnet \
 ftp
 
-nmcli connection modify "Wired connection 1" \
-ipv4.addresses "100.70.9.10/24" \
-ipv4.method manual || true
-nmcli connection up "Wired connection 1" || true
+nmcli connection add \
+  type ethernet \
+  ifname eth1 \
+  con-name "lab-externa" \
+  ip4 100.70.9.10/24 \
+  -- ipv4.method manual \
+     ipv6.method disabled || true
+
+nmcli connection up "lab-externa" || true
 sleep 2
-ip addr show eth1
+ip route add 192.168.57.0/24 via 100.70.9.1 || true
+ip route add 192.168.58.0/24 via 100.70.9.1 || true
 
 #El atacante no hace routing, solo escucha, por eso ip_forward desactivado.
 sysctl -w net.ipv4.ip_forward=0
@@ -32,7 +38,7 @@ mkdir -p /home/vagrant/lab/{recon,captures,exploits}
 chown -R vagrant:vagrant /home/vagrant/lab
 
 #Alias para las prácticas.
-cat >> /home/vagrant/.bashrc<<'EOF'
+cat > /home/vagrant/.bashrc<<'EOF'
 #Insecure-network-lab aliases
 alias nmap-quick='nmap -sV -T4 --open'
 alias nmap-full='nmap -sV -sC -O -p- -T4'
@@ -40,8 +46,12 @@ alias iface='ip -br addr show'
 alias targets='echo "DMZ: 192.168.57.10"; echo "Internal: 192.168.58.10"'
 EOF
 
+nmcli connection modify "lab-externa" \
+  +ipv4.routes "192.168.57.0/24 100.70.9.1" \
+  +ipv4.routes "192.168.58.0/24 100.70.9.1" || true
+nmcli connection up "lab-externa" || true
+
 echo "[external-kali] Provisioning completado."
 
-ip route add 192.168.57.0/24 via 100.70.9.1 || true
-ip route add 192.168.58.0/24 via 100.70.9.1 || true
-echo "[external-kali] rutas completado."
+
+

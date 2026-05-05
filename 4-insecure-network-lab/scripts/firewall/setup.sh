@@ -8,7 +8,19 @@
 # - Reglas permisivas explícitas que anulan cualquier control
 set -euo pipefail
 export DEBIAN_FRONTEND=noninteractive
+sleep 10
+ip -br addr   # esto aparecerá en el log de vagrant up
 
+EXT_IFACE=$(ip -br addr | awk '/100\.70\.9\.1/ {print $1}')
+DMZ_IFACE=$(ip -br addr | awk '/192\.168\.57\.1/ {print $1}')
+INT_IFACE=$(ip -br addr | awk '/192\.168\.58\.1/ {print $1}')
+
+echo "EXT=$EXT_IFACE DMZ=$DMZ_IFACE INT=$INT_IFACE"
+
+if [ -z "$EXT_IFACE" ] || [ -z "$DMZ_IFACE" ] || [ -z "$INT_IFACE" ]; then
+  echo "ERROR: interfaces no detectadas, abortando"
+  exit 1
+fi
 # Paquetes necesarios
 apt-get update -qq
 apt-get install -y -qq iptables iptables-persistent

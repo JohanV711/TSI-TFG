@@ -24,31 +24,47 @@ AcceptEnv LANG LC_*
 Subsystem sftp /usr/lib/openssh/sftp-server
 EOF
 
+cat > /etc/ssh/banner << 'EOF'
+*******************************************
+  Internal Server 4-insecure-network-lab
+  Ubuntu 22.04 LTS
+  TFG TSI
+*******************************************
+EOF
+
 #Contraseña débil
 echo "root:root" | chpasswd
-
 systemctl restart ssh
 
 #Mysql sin autenticación t accesible desde cualquier IP
 sed -i 's/^bind-address\s*=.*/bind-address=0.0.0.0/' \
-/etc/mysql/mysql.conf.d/mysqld.cnf
-systemctl start mysql
-sleep 10
-systemctl is-active --quiet mysql
+  /etc/mysql/mysql.conf.d/mysqld.cnf
 
-#Quitar contraseña root mysql.
-mysql -u root << 'SQL'
+systemctl restart mysql
+sleep 5
+
+#Comprobar si root ya tiene acceso desde cualquier host
+ROOT_CONFIGURED=$(mysql -u root \
+  -e "SELECT host FROM mysql.user WHERE user='root' AND host='%';" \
+  2>/dev/null | grep -c '%' || true)
+
+if [ "$ROOT_CONFIGURED" -eq 0 ]; then
+  mysql -u root << 'SQL'
 ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '';
-UPDATE mysql.user SET host='%' WHERE user ='root' AND host='localhost';
+UPDATE mysql.user SET host='%' WHERE user='root' AND host='localhost';
 FLUSH PRIVILEGES;
 SQL
+  echo "MySQL root configurado sin contraseña."
+else
+  echo "MySQL root ya estaba configurado, omitiendo ALTER USER."
+fi
 
 #SAMBA.
 mkdir -p /srv/samba/confidential
 chmod 777 /srv/samba/confidential
-
+#idempotencia
+if ! grep -q '\[confidential\]' /etc/samba/smb.conf; then
 cat >> /etc/samba/smb.conf << 'EOF'
-
 [confidential]
     path=/srv/samba/confidential
     browsable=yes
@@ -59,29 +75,33 @@ cat >> /etc/samba/smb.conf << 'EOF'
     directory mask= 0777
     comment= Confidential Documents
 EOF
-
+fi
 systemctl restart smbd nmbd
 
 #Desactivar ufw, ahora sin firewall.
 ufw disable || true
 
-echo "[internal-server] Setup completado."
 
+# Detectar interfaz de la red interna (la que tiene 192.168.58.x)
+INT_IFACE=$(ip -br addr | awk '/192\.168\.58\./ {print $1}')
+echo "Interfaz interna detectada: $INT_IFACE"
 
-#Rutas:
-ip route add 192.168.57.0/24 via 192.168.58.1 || true
-ip route add 100.70.9.0/24 via 192.168.58.1 || true
+# Rutas estáticas temporales
+ip route add 192.168.57.0/24 via 192.168.58.1 2>/dev/null || true
+ip route add 100.70.9.0/24   via 192.168.58.1 2>/dev/null || true
 
-cat >> /etc/netplan/99-lab-routes.yaml << 'EOF'
+# Rutas persistentes con el nombre de interfaz real
+cat > /etc/netplan/99-lab-routes.yaml << EOF
 network:
   version: 2
   ethernets:
-    eth1:
+    ${INT_IFACE}:
       routes:
         - to: 192.168.57.0/24
           via: 192.168.58.1
         - to: 100.70.9.0/24
           via: 192.168.58.1
 EOF
-netplan apply || true
-echo "rutas de internal-server configuradas correctmanete"
+netplan apply
+
+echo "[internal-server] Setup completado."

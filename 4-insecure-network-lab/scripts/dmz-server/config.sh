@@ -65,9 +65,6 @@ SSH interno: root/root
 VPN admin: admin/admin123
 EOF
 
-id ftpoperator || useradd -m -s /bin/bash ftpoperator
-echo "ftpoperator:operator" | chpasswd
-
 cat > /var/www/html/backup/network.txt << 'EOF'
 Firewall: 100.70.9.1
 DMZ: 192.168.57.10
