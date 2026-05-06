@@ -37,9 +37,9 @@ echo "root:root" | chpasswd
 systemctl restart ssh
 
 #Mysql sin autenticación t accesible desde cualquier IP
-sed -i 's/^bind-address\s*=.*/bind-address=0.0.0.0/' \
-  /etc/mysql/mysql.conf.d/mysqld.cnf
-
+grep -q '^bind-address' /etc/mysql/mysql.conf.d/mysqld.cnf \
+  && sed -i 's/^bind-address\s*=.*/bind-address = 0.0.0.0/' /etc/mysql/mysql.conf.d/mysqld.cnf \
+  || echo 'bind-address = 0.0.0.0' >> /etc/mysql/mysql.conf.d/mysqld.cnf
 systemctl restart mysql
 sleep 5
 

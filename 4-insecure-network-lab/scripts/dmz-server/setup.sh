@@ -8,11 +8,15 @@ apt-get update -qq
 apt-get install -y -qq \
 apache2 \
 vsftpd \
-telnetd \
 xinetd \
+inetutils-telnetd \
 php \
 php-mysql \
-libapache2-mod-php
+libapache2-mod-php \
+mysql-client \
+smbclient \
+dsniff \
+openssh-server
 
 #Malas prácticas para Apache
 cat > /etc/apache2/conf-available/insecure.conf << 'EOF'
@@ -45,29 +49,34 @@ connect_from_port_20=YES
 ftp_banner=vsftpd 3.0.3 - CorpNet FTP Server
 anon_root=/srv/ftp
 no_anon_password=YES
+pasv_enable=YES
+pasv_min_port=30000
+pasv_max_port=30100
 EOF
 
 mkdir -p /srv/ftp/public
 chmod 777 /srv/ftp/public
 chown -R ftp:ftp /srv/ftp
 
+systemctl enable vsftpd
 systemctl restart vsftpd
 
-#Telnet servicio de puerto 23 con texto en claro y captura de credenciales con Wireshark/tcpdump.
 
+#Telnet servicio de puerto 23 con texto en claro y captura de credenciales con Wireshark/tcpdump.
 cat > /etc/xinetd.d/telnet << 'EOF'
 service telnet
 {
-flags=REUSE
-socket_type=stream
-wait=no
-user=root
-server=/usr/sbin/in.telnetd
-log_on_failure+=USERID
-disable=no
+flags = REUSE
+socket_type = stream
+wait = no
+user = root
+server = /usr/sbin/telnetd
+log_on_failure += USERID
+disable = no
 }
 EOF
 
+systemctl enable xinetd
 systemctl restart xinetd
 
 #Usuario débil para Telnet y FTP con credenciales por defecto.
@@ -97,6 +106,9 @@ network:
           via: 192.168.57.1
 EOF
 netplan apply
-echo "[dmz-server] rutas configuradas en $DMZ_IFACE"
+
+sed -i 's/^#\?PasswordAuthentication.*/PasswordAuthentication yes/' /etc/ssh/sshd_config
+sed -i 's/^#\?PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config
+systemctl restart ssh
 
 echo "[dmz-server] setup completado."

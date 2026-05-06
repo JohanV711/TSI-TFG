@@ -16,7 +16,7 @@ CREATE TABLE IF NOT EXISTS employees (
     salary INT
 );
 
-INSERT INTO employees (username, full_name, email, department, salary) VALUES
+INSERT IGNORE INTO employees (username, full_name, email, department, salary) VALUES
 ('jmartinez', 'Juan Martínez', 'jmartinez@empresa.local', 'IT', 55000),
 ('mlopez', 'María López', 'mlopez@empresa.local', 'Finanzas', 72000),
 ('cgarcia', 'Carlos García', 'cgarcia@empresa.local', 'RRHH', 48000),
@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS user_credentials (
     last_login DATETIME
 );
 
-INSERT INTO user_credentials (username, password, service, last_login) VALUES
+INSERT IGNORE INTO user_credentials (username, password, service, last_login) VALUES
 ('admin', 'admin123', 'vpn', '2024-11-01 09:23:00'),
 ('jmartinez', 'juan2024', 'email', '2024-11-03 14:05:00'),
 ('mlopez', 'Maria@Finanzas', 'intranet', '2024-10-28 11:30:00'),
@@ -47,13 +47,20 @@ CREATE TABLE IF NOT EXISTS network_inventory (
     notes VARCHAR(200)
 );
 
-INSERT INTO network_inventory (hostname, ip_address, service, notes) VALUES
+INSERT IGNORE INTO network_inventory (hostname, ip_address, service, notes) VALUES
 ('fw-central', '100.70.9.1', 'firewall', 'Puerta de enlace principal'),
 ('web-dmz', '192.168.57.10', 'http/ftp', 'Servidor web público'),
 ('srv-interno', '192.168.58.10', 'mysql/smb', 'Servidor interno de datos'),
 ('srv-backup', '192.168.58.11', 'ftp', 'Servidor de copias de seguridad nocturnas');
 
 SQL
-
+cat > /srv/samba/confidential/passwords.txt << 'EOF'
+ Credenciales Corporativas - CONFIDENCIAL 
+admin / admin123
+root / root
+ftpoperator / ftpoperator
+backup / backup
+EOF
+chmod 644 /srv/samba/confidential/passwords.txt
  echo "[internal-server] data completado."
 

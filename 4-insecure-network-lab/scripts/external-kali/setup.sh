@@ -10,6 +10,9 @@ apt-get update -qq
 #Se instalan herramientas complementarias no incluidas en la box base.
 apt-get install -y -qq \
 netdiscover \
+hydra \
+tcpdump \
+wireshark-common \
 dsniff \
 nmap \
 ettercap-text-only \

@@ -59,7 +59,7 @@ EOF
 #Directorio de backups accesible vía web.
 mkdir -p /var/www/html/backup
 cat > /var/www/html/backup/credentials.txt << 'EOF'
-MySQL root: 
+MySQL root: root/ (sin contraseña)
 FTP operator: ftpoperator/ftpoperator
 SSH interno: root/root
 VPN admin: admin/admin123

