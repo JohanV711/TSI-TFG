@@ -13,7 +13,6 @@ inetutils-telnetd \
 php \
 php-mysql \
 libapache2-mod-php \
-mysql-client \
 smbclient \
 dsniff \
 openssh-server
@@ -34,6 +33,14 @@ a2enconf insecure
 systemctl restart apache2
 
 #vsftpd- FTP anónimo sin restricciones que permite acceder y descargar ficheros sin autenticación.
+mkdir -p /srv/ftp/public
+#/srv/ftp dueño ftp, sin escritura para nadie porque vsftpd lo exige.
+chown ftp:ftp /srv/ftp
+chmod 555 /srv/ftp
+
+chown ftp:ftp /srv/ftp/public
+chmod 777 /srv/ftp/public
+
 cat > /etc/vsftpd.conf << 'EOF'
 listen=YES
 listen_ipv6=NO
@@ -46,7 +53,6 @@ dirmessage_enable=YES
 use_localtime=YES
 xferlog_enable=NO
 connect_from_port_20=YES
-ftp_banner=vsftpd 3.0.3 - CorpNet FTP Server
 anon_root=/srv/ftp
 no_anon_password=YES
 pasv_enable=YES
@@ -54,12 +60,10 @@ pasv_min_port=30000
 pasv_max_port=30100
 EOF
 
-mkdir -p /srv/ftp/public
-chmod 777 /srv/ftp/public
-chown -R ftp:ftp /srv/ftp
 
 systemctl enable vsftpd
 systemctl restart vsftpd
+systemctl is-active vsftpd && echo "vsftpd OK" || echo "vsftpd FAILED"
 
 
 #Telnet servicio de puerto 23 con texto en claro y captura de credenciales con Wireshark/tcpdump.
@@ -107,8 +111,18 @@ network:
 EOF
 netplan apply
 
-sed -i 's/^#\?PasswordAuthentication.*/PasswordAuthentication yes/' /etc/ssh/sshd_config
-sed -i 's/^#\?PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config
+cat > /etc/ssh/sshd_config << 'EOF'
+Port 22
+PermitRootLogin yes
+PasswordAuthentication yes
+MaxAuthTries 10
+LoginGraceTime 120
+X11Forwarding no
+PrintMotd yes
+AcceptEnv LANG LC_*
+Subsystem sftp /usr/lib/openssh/sftp-server
+EOF
+
 systemctl restart ssh
 
 echo "[dmz-server] setup completado."

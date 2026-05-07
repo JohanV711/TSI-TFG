@@ -59,4 +59,5 @@ alias iface='ip -br addr show'
 alias targets='echo "DMZ: 192.168.57.10"; echo "Internal: 192.168.58.10"'
 EOF
 
+
 echo "[external-kali] completado"
