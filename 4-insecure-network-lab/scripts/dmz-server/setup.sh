@@ -12,7 +12,7 @@ xinetd \
 inetutils-telnetd \
 php \
 php-mysql \
-install mysql-client \
+mysql-client \
 libapache2-mod-php \
 smbclient \
 dsniff \
