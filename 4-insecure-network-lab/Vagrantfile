@@ -67,6 +67,7 @@ Vagrant.configure("2") do |config|
         end
         dmz.vm.provision "shell", path: "scripts/dmz-server/setup.sh", privileged:true
         dmz.vm.provision "shell", path: "scripts/dmz-server/config.sh", privileged:true
+        dmz.vm.provision "shell", path: "scripts/dmz-server/phishing.sh", privileged: true
 
     end
     

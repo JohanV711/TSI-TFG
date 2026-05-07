@@ -34,7 +34,7 @@ cat > /etc/ssh/banner << 'EOF'
 EOF
 
 #Contraseña débil
-echo "root:root" | chpasswd
+echo "root:root123" | chpasswd
 systemctl restart ssh
 
 #Mysql sin autenticación t accesible desde cualquier IP

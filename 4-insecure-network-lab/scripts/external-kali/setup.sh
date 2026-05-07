@@ -59,6 +59,18 @@ alias iface='ip -br addr show'
 alias targets='echo "DMZ: 192.168.57.10"; echo "Internal: 192.168.58.10"'
 EOF
 
-ssh-keygen -f '/home/vagrant/.ssh/known_hosts' -R '192.168.57.10'
+mkdir -p /home/vagrant/.ssh
+chmod 700 /home/vagrant/.ssh
+cat > /home/vagrant/.ssh/config << 'EOF'
+Host 192.168.57.*
+    StrictHostKeyChecking no
+    UserKnownHostsFile /dev/null
+
+Host 192.168.58.*
+    StrictHostKeyChecking no
+    UserKnownHostsFile /dev/null
+EOF
+chmod 600 /home/vagrant/.ssh/config
+chown -R vagrant:vagrant /home/vagrant/.ssh
 
 echo "[external-kali] completado"
