@@ -8,6 +8,7 @@ apt-get install -y -qq \
 openssh-server \
 mysql-server \
 samba \
+netdiscover \
 smbclient
 
 #Malas prácticas para SSH

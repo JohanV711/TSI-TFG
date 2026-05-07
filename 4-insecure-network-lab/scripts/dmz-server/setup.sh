@@ -12,9 +12,11 @@ xinetd \
 inetutils-telnetd \
 php \
 php-mysql \
+install mysql-client \
 libapache2-mod-php \
 smbclient \
 dsniff \
+netdiscover \
 openssh-server
 
 #Malas prácticas para Apache

