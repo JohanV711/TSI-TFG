@@ -39,3 +39,10 @@ env/
 node_modules/
 dist/
 build/
+
+# OPNsense lab
+*.box
+opnsense-console.log
+192.168.56.*
+.vagrant/
+opnsense-25.1-lab.box

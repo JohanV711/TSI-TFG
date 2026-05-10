@@ -169,8 +169,8 @@ Para descubrimiento ARP en la red DMZ (requiere estar en el mismo segmento,
 útil tras pivotar desde dmz-server):
 
 ```bash
-# Desde dmz-server tras acceder por Telnet o SSH
-netdiscover -i enp0s8 -r 192.168.57.0/24
+# Desde external-kali accedemos a dmz-server por Telnet o SSH y después podemos acceder a escanear el internal-server.
+telnet 192.168.57.10
 netdiscover -i enp0s8 -r 192.168.58.0/24
 ```
 
@@ -309,6 +309,7 @@ smb: \> ls
 smb: \> get passwords.txt
 smb: \> exit
 ```
+Ahora la ficheero passwords.txt se puede apreciar si salimos con exit a external-kali y buscamos con ls en el directorio actual en el que nos encontremos.
 
 **Desde dmz-server** (tras pivotar):
 
@@ -357,7 +358,7 @@ telnet 192.168.57.10
 
 ```bash
 # Para detener el ARP spoofing al terminar CTRL+C o:
-sudo killall arpspoof
+sudo killall tcpdump
 sudo sysctl -w net.ipv4.ip_forward=0
 ```
 
