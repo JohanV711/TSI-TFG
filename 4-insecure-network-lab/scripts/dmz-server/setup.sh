@@ -62,11 +62,8 @@ pasv_min_port=30000
 pasv_max_port=30100
 EOF
 
-
 systemctl enable vsftpd
 systemctl restart vsftpd
-systemctl is-active vsftpd && echo "vsftpd OK" || echo "vsftpd FAILED"
-
 
 #Telnet servicio de puerto 23 con texto en claro y captura de credenciales con Wireshark/tcpdump.
 cat > /etc/xinetd.d/telnet << 'EOF'
@@ -91,14 +88,9 @@ echo "ftpoperator:ftpoperator" | chpasswd
 #Quitar firewall local
 ufw disable || true
 
-
-
 # Detectar interfaz de la red DMZ (la que tiene 192.168.57.x)
 DMZ_IFACE=$(ip -br addr | awk '/192\.168\.57\./ {print $1}')
 echo "Interfaz DMZ detectada: $DMZ_IFACE"
-
-ip route add 192.168.58.0/24 via 192.168.57.1 || true
-ip route add 100.70.9.0/24   via 192.168.57.1 || true
 
 cat > /etc/netplan/99-lab-routes.yaml << EOF
 network:

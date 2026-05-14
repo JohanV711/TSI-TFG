@@ -1,7 +1,8 @@
 Vagrant.configure("2") do |config|
 
   config.vm.define "opensense" do |fw|
-    fw.vm.box = "snl-opnsense"
+    fw.vm.box = "snl-opensense/snl-opensense"
+    fw.vm.box_url = "https://github.com/JohanV711/TSI-TFG/releases/download/v1.0.0/opnsense-25.1-lab.box"
 
     # OPNsense no usa SSH de Vagrant.
     fw.vm.network "forwarded_port",

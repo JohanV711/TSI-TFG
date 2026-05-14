@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# VM: internal-server  |  Phishing — página falsa de GitHub
+# VM: dmz-server  |  Phishing — página falsa de GitHub
 # Credenciales capturadas en: /var/log/phishing.log
 set -euo pipefail
 export DEBIAN_FRONTEND=noninteractive
@@ -348,5 +348,8 @@ systemctl restart apache2
 touch /var/log/phishing.log
 chmod 666 /var/log/phishing.log
 
-echo "[internal-server] Phishing page desplegada en http://192.168.58.10:8080"
+echo "[internal-server] Phishing page desplegada en http://192.168.57.10:8080"
 echo "[internal-server] Credenciales capturadas en: /var/log/phishing.log"
+echo "[dmz-server] Para recoger credenciales desde Kali:"
+echo "ssh ftpoperator@192.168.57.10"
+echo "cat /var/log/phishing.log"

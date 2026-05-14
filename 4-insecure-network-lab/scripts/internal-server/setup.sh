@@ -86,12 +86,7 @@ ufw disable || true
 # Detectar interfaz de la red interna (la que tiene 192.168.58.x)
 INT_IFACE=$(ip -br addr | awk '/192\.168\.58\./ {print $1}')
 echo "Interfaz interna detectada: $INT_IFACE"
-
-# Rutas estáticas temporales
-ip route add 192.168.57.0/24 via 192.168.58.1 2>/dev/null || true
-ip route add 100.70.9.0/24   via 192.168.58.1 2>/dev/null || true
-
-# Rutas persistentes con el nombre de interfaz real
+# Rutas persistentes con netplan
 cat > /etc/netplan/99-lab-routes.yaml << EOF
 network:
   version: 2
