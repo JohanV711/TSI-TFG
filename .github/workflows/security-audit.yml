@@ -2,7 +2,7 @@
 #Escanea imágenes de Docker en busca de vulnerabilidades, secretos expuestos en el código y que los 
 #Dockerfiles sigan buenas prácticas.
 
-name: Security scan
+name: Security audit
 
 on: 
   push:
@@ -30,7 +30,7 @@ jobs:
         with:
           image-ref: tfg-backend:scan
           format: table
-          severity: HIGH, CRITICAL
+          severity: HIGH,CRITICAL
           exit-code: "1"    #Falla si el pipeline encuentra algo crítico.
 
       # - name: Build imagen frontend para escanear
