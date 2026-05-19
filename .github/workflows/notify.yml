@@ -31,21 +31,20 @@ jobs:
 
       - name: Notificar push a Telegram
         run: |
-          msg=$(cat <<'EOF'
-            <b>TSI-TFG — nuevo push</b>
-            <b>Rama:</b> ${{ github.ref_name }}
-            <b>Autor:</b> ${{ github.actor }}
-            <b>Mensaje:</b> ${{ github.event.head_commit.message }}
-            <b>Commit:</b> <code>${{ github.sha }}</code>
-            
-            <b>Archivos modificados:</b>
-            ${{ steps.changed.outputs.files }}
-            
-            🔗 <a href="${{ github.event.head_commit.url }}">Ver commit</a>
-            EOF
-                      )
-
-          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TOKEN_TELEGRAM_BOT }}/sendMessage" \
+          read -r -d '' msg <<EOF
+          <b>TSI-TFG — nuevo push</b>
+          <b>Rama:</b> ${{ github.ref_name }}
+          <b>Autor:</b> ${{ github.actor }}
+          <b>Mensaje:</b> ${{ github.event.head_commit.message }}
+          <b>Commit:</b> <code>${{ github.sha }}</code>
+          
+          <b>Archivos modificados:</b>
+          ${{ steps.changed.outputs.files }}
+          
+          🔗 <a href="${{ github.event.head_commit.url }}">Ver commit</a>
+          EOF
+          
+            curl -s -X POST "https://api.telegram.org/bot${{ secrets.TOKEN_TELEGRAM_BOT }}/sendMessage" \
             -d chat_id="${{ secrets.CHAT_ID_TELEGRAM }}" \
             -d parse_mode="HTML" \
-            --data-urlencode text="$msg"
+            --data-urlencode "text=${msg}"
