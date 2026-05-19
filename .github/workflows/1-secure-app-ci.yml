@@ -30,7 +30,8 @@ jobs:
       - name: Escanear secrets con Gitleaks
         uses: gitleaks/gitleaks-action@v2            #Acción oficial de Gitleaks para escanear el respositorio.
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  #Token interno para autenticar la acción con la API de Github
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  #Token interno para autenticar la acción con la API de Github y no tener que usar la contraseña
+                                                     #del usuario. Este token sólo es válido mientras el workflow está corriendo.
 
   hadolint:
     name: Hadolint - Buenas prácticas en Dockerfiles
@@ -75,8 +76,10 @@ jobs:
           tags: tfg-${{ matrix.service }}:scan        #Define el nombre local de la imagen creada en la MV de github.
           push: false         #para no subir esa imagen creada a un repositorio público de contenedores como Docker Hub.
           load: true         #Carga la imagen en el daemon local para que Trivy pueda acceder.
-          cache-from: type=gha        #Ayuda a que se descarguen y reutilicen capas compiladas previamente.
+          cache-from: type=gha        #Ayuda a que se descarguen y reutilicen capas compiladas previamente. gha= github actions.
+                                      #ayuda a que se suban los bloques y capas que no cambian al almacenamiento interno de caché de GH actions.
           cache-to: type=gha,mode=max  #Guarda la caché de este build en GitHub para optimizar ejecuciones futuras.
+                                       #mode=max le indica a Docker que guarde absolutamente todo el historial de capas en caché.
           
       - name: Escanear imagen con Trivy
         uses: aquasecurity/trivy-action@master
