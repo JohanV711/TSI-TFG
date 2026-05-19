@@ -1,4 +1,4 @@
-#workflow para notificar a un bot de telegrm cambios subidos al repositorio
+# workflow para notificar a un bot de telegram cambios subidos al repositorio.
 name: Notificación Telegram
 
 on:
@@ -13,25 +13,30 @@ jobs:
       - name: Checkout completo
         uses: actions/checkout@v4
         with:
-          fetch-depth: 2
+          fetch-depth: 2 # Trae los 2 últimos commits para poder comparar
 
       - name: Obtener archivos modificados
         id: changed
         run: |
-          files=$(git diff --name-only --diff-filter=ACMRT HEAD^ HEAD | sed 's/^/- /')
+          # Comprobamos si HEAD^ existe (si hay más de un commit en el historial)
+          if git rev-parse --verify HEAD^ >/dev/null 2>&1; then
+            files=$(git diff --name-only --diff-filter=ACMRT HEAD^ HEAD | sed 's/^/- /')
+          else
+            # Si es el primer commit, listamos todos los archivos del repositorio
+            files=$(git ls-files | sed 's/^/- /')
+          fi
+
           if [ -z "$files" ]; then
             files="(No se detectaron archivos modificados)"
           fi
 
-          {
-            echo "files<<EOF"
-            echo "$files"
-            echo "EOF"
-          } >> "$GITHUB_OUTPUT"
+          echo "files<<EOF" >> "$GITHUB_OUTPUT"
+          echo "$files" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
 
       - name: Notificar push a Telegram
         run: |
-          read -r -d '' msg <<EOF
+          msg=$(cat << 'EOF'
           <b>TSI-TFG — nuevo push</b>
           <b>Rama:</b> ${{ github.ref_name }}
           <b>Autor:</b> ${{ github.actor }}
@@ -43,8 +48,10 @@ jobs:
           
           🔗 <a href="${{ github.event.head_commit.url }}">Ver commit</a>
           EOF
+          )
           
-            curl -s -X POST "https://api.telegram.org/bot${{ secrets.TOKEN_TELEGRAM_BOT }}/sendMessage" \
+          # Hacemos el POST enviando el texto correctamente codificado para URLs
+          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TOKEN_TELEGRAM_BOT }}/sendMessage" \
             -d chat_id="${{ secrets.CHAT_ID_TELEGRAM }}" \
             -d parse_mode="HTML" \
             --data-urlencode "text=${msg}"
