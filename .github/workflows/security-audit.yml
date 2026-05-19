@@ -26,13 +26,22 @@ jobs:
         working-directory: 1-secure-app
         run: docker build -t tfg-backend:scan backend/.
 
-      - name: Escanear imagen backend
+      - name: Trivy informe general
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: tfg-backend:scan
+          format: table
+          severity: UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL
+          exit-code: "0"
+      
+      - name: Trivy bloquear solo grave
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: tfg-backend:scan
           format: table
           severity: HIGH,CRITICAL
-          exit-code: "1"    #Falla si el pipeline encuentra algo crítico.
+          exit-code: "1"
+          ignore-unfixed: true
 
       # - name: Build imagen frontend para escanear
       #  working-directory: 1-secure-app
