@@ -66,8 +66,9 @@ jobs:
         dockerfile:
           - 1-secure-app/backend/Dockerfile
           # - 1-secure-app/frontend/Dockerfile
-          # - 1-secure-app/nginx/Dockerfile
+          # - 1- secure-app/nginx/Dockerfile
     steps:
+      - uses: actions/checkout@v4
       - name: Lint ${{ matrix.dockerfile }}
         uses: hadolint/hadolint-action@v3.1.0
         with:
