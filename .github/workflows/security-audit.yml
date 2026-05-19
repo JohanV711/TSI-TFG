@@ -46,7 +46,8 @@ jobs:
       #     image-ref: tfg-frontend:scan
       #     format: table
       #     severity: HIGH,CRITICAL
-      #     exit-code: "1"      
+      #     exit-code: "1"    
+      #     ignore-unfixed: true
 
   gitleaks:      #revisa el repositorio para detectar secretos como tokens, claves o contraseñas.
     name: Gitleaks - detección de secrets en el código
