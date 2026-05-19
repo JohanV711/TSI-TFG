@@ -1,0 +1,66 @@
+name: Docker build
+
+on:
+  push:
+    branches: [main]  #Se ejecuta este workflow cuando se hace push a main.
+  pull_request:
+    branches: [main]  #Ejecuta el workflow en Pull Requests hacia main.
+
+jobs:
+
+  build:
+    name: Build - ${{ matrix.service }}  #Nombre del job para cada servicio del matrix.
+    runs-on: ubuntu-latest               #Runner de Linux para GitHub Actions.
+    strategy:
+      matrix:
+        service: [backend]
+      fail-fast: false                   #que sigan los demás aunque uno falle
+
+    steps:
+      - uses: actions/checkout@v4        #descarga el archivo del repositorio.
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3  #Activa Buildx para builds avanzados.
+
+      - name: Build ${{ matrix.service }}
+        uses: docker/build-push-action@v5    #Construye la imagen Docker.
+        with:
+          context: secure-app/${{ matrix.service }}  #Carpeta base del build.
+          push: false                                #No sube la imagen a un resgistry.
+          cache-from: type=gha                       #Usa caché de GitHub Actions
+          cache-to: type=gha,mode=max                #Guarda caché para acelerar
+          
+  compose-check:
+    name: Docker Compose - validación
+    runs-on: ubuntu-latest
+    needs: build                                      #Espera a que termine el job build.
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Copiar .env de ejemplo
+        working-directory: secure-app
+        run: cp .env.example .env                      #Copia variables de entorno de ejemplo.
+
+      - name: Validar docker-compose.yml
+        working-directory: secure-app
+        run: docker compose config --quiet              #Validación de sintaxis del compose.
+        
+      - name: Levantar servicios
+        working-directory: secure-app
+        run: docker compose up -d --build                #Levanta contenedores en segundo plano.
+
+      - name: Comprobar que los contenedores están corriendo
+        run: |
+          docker compose -f secure-app/docker-compose.yml ps
+          docker compose -f secure-app/docker-compose.yml ps | grep -v "Exit\\|exited"
+
+      - name: Bajar servicios
+        if: always()   # se ejecuta aunque el paso anterior falle
+        working-directory: secure-app
+        run: docker compose down -v
+
+
+
+
+
+      
