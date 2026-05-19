@@ -16,6 +16,9 @@ FROM python:3.12-slim
 #Directorio de trabajo dentro del contenedor que se cree con esta imagen.
 WORKDIR /app
 
+#(Actualización) Actualizar paquetes del SO del contenedor para solucionar CVEs de Trivy..
+RUN apt-get update && apt-get upgrade -y && rm -rf /var/lib/apt/lists/*
+
 #Docker por defecto usa usuarios root para correr los procesos (UID 0) dentro de un contenedor.
 #Este usuario tiene privilegios y si alguien consiguiera entrar con él podría comprometer la seguridad.
 #Por esa razón se va a crear un usuario sin privilegios de admin para que su intevención en el contenedor sea limitada.
