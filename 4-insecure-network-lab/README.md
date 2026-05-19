@@ -135,25 +135,6 @@ La interfaz NAT de Vagrant solo se usa durante el aprovisionamiento inicial.
 
 ---
 
-# Instalación en Ubuntu Server 24.04
-
-```bash
-# VirtualBox
-sudo apt install -y virtualbox virtualbox-ext-pack
-
-# Vagrant
-wget -O- https://apt.releases.hashicorp.com/gpg | \
-  sudo gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg
-
-echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] \
-  https://apt.releases.hashicorp.com $(lsb_release -cs) main" | \
-  sudo tee /etc/apt/sources.list.d/hashicorp.list
-
-sudo apt update && sudo apt install -y vagrant
-```
-
----
-
 # Despliegue
 
 ```bash
@@ -184,9 +165,9 @@ vagrant destroy -f
 
 | Acción | Tiempo |
 |---|---|
-| Primera ejecución | 20-50 min |
+| Primera ejecución | 10-20 min |
 | Ejecuciones posteriores | 3-10 min |
-| Reinicio de VMs | 2-5 min |
+| Reinicio de VMs | 5-10 min |
 
 > Nota: las VMs usan `box_check_update = false`.
 
@@ -199,8 +180,6 @@ Todos los ataques se ejecutan desde `external-kali`.
 ```bash
 vagrant ssh external-kali
 ```
-
-Los alias predefinidos (`nmap-quick`, `nmap-full`, `targets`) facilitan las prácticas.
 
 ---
 
@@ -224,12 +203,15 @@ enum4linux 192.168.58.10
 ```bash
 # Acceso Telnet
 telnet 192.168.57.10
-
 # Usuario: ftpoperator
 # Password: ftpoperator
+```
 
-# Escaneo interno
-netdiscover -i enp0s8 -r 192.168.58.0/24
+Una vez dentro de `dmz-server`, se puede escanear la red interna utilizando
+`nmap -sn` (ping sweep), ya que el firewall enruta el tráfico pero no filtra
+ICMP:
+```bash
+nmap -sn 192.168.58.0/24
 ```
 
 ### Qué demuestra
@@ -275,9 +257,8 @@ curl http://192.168.57.10/admin/
 
 ```bash
 ftp 192.168.57.10
-
 # Usuario: anonymous
-# Password: vacío
+# Password: 
 
 ftp> ls
 ftp> cd public
@@ -299,7 +280,6 @@ ftp> exit
 
 ```bash
 telnet 192.168.57.10
-
 # Login: ftpoperator
 # Password: ftpoperator
 ```
@@ -317,8 +297,7 @@ Las credenciales viajan sin cifrar y pueden capturarse fácilmente.
 curl http://192.168.57.10:8080
 
 # Envío de credenciales
-curl -X POST http://192.168.57.10:8080/capture.php \
-  -d "username=admin&password=Password123!"
+curl -X POST http://192.168.57.10:8080/capture.php -d "username=admin&password=Password123!";
 
 # Recuperar credenciales
 ssh ftpoperator@192.168.57.10
@@ -357,7 +336,7 @@ ssh root@192.168.58.10
 ## Acceso directo
 
 ```bash
-mysql -h 192.168.58.10 -u root
+mysql -h 192.168.58.10 -u root --skip-ssl
 
 mysql> USE corporativedb;
 mysql> SELECT * FROM user_credentials;

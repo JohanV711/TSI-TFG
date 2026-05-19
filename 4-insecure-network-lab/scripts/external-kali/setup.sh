@@ -1,29 +1,34 @@
 #!/usr/bin/env bash
 
-#Configuración de máquina de rol de atacante externo Kali.
-#Red 100.70.9.0/24, ip: 100.70.9.10. Sin salida a internet
+# Configuración de máquina de rol de atacante externo Kali.
+# Red 100.70.9.0/24, ip: 100.70.9.10. Sin salida a internet
 set -euo pipefail
 
-#Actualización mínima del sistema.
-export DEBIAN_FRONTEND=noninteractive #Comando para evitar que el SO solicite infromación al usuario durante instalación o actualización de paquetes basados en Debian.
+# Actualización mínima del sistema.
+export DEBIAN_FRONTEND=noninteractive
 apt-get update -qq
-#Se instalan herramientas complementarias no incluidas en la box base.
-apt-get install -y -qq \
-netdiscover \
-hydra \
-tcpdump \
-wireshark-common \
-dsniff \
-nmap \
-ettercap-text-only \
-telnet \
-ftp
 
-#Configuración de interfaz de gestión con métrica baja.
+# Se instalan herramientas complementarias no incluidas en la box base.
+apt-get install -y -qq \
+  netdiscover \
+  hydra \
+  tcpdump \
+  wireshark-common \
+  dsniff \
+  nmap \
+  ettercap-text-only \
+  telnet \
+  ftp
+
+# Configurar interfaz de gestión (eth0 - NAT de Vagrant)
 nmcli connection modify "Wired connection 1" \
   ipv4.route-metric 50 || true
 
-#configuración interfaz del laboratorio.
+# Configurar interfaz del laboratorio (eth1)
+# Eliminar conexión anterior si existe para evitar conflictos
+nmcli connection delete "lab-externa" 2>/dev/null || true
+
+# Crear nueva conexión para la red del laboratorio
 nmcli connection add \
   type ethernet \
   ifname eth1 \
@@ -32,33 +37,44 @@ nmcli connection add \
   -- ipv4.method manual \
      ipv4.route-metric 101 \
      ipv4.never-default yes \
-     ipv6.method disabled || true
+     ipv6.method disabled
 
-# Rutas hacia otras redes a través del firewall
-nmcli connection modify "lab-externa" ipv4.routes ""
+# Añadir rutas hacia otras redes a través del firewall
 nmcli connection modify "lab-externa" \
   +ipv4.routes "192.168.57.0/24 100.70.9.1" \
-  +ipv4.routes "192.168.58.0/24 100.70.9.1" 
+  +ipv4.routes "192.168.58.0/24 100.70.9.1"
 
-  # Aplicar en orden: primero eth0, luego eth1
+# Activar conexiones en orden
 nmcli connection up "Wired connection 1" || true
-sleep 1
+sleep 2
 nmcli connection up "lab-externa" || true
 
-# Asegurar que las rutas son persistentes
-cat > /etc/NetworkManager/conf.d/lab-routes.conf << 'EOF'
-[connection]
-connection.auth-retries=5
-EOF
+# Verificar que la IP se asignó correctamente
+echo "=== Configuración de red aplicada ==="
+ip addr show eth1
+echo "=== Rutas configuradas ==="
+ip route show
 
-#El atacante no hace routing, solo escucha, por eso ip_forward desactivado.
+# CONFIGURACIÓN DE SEGURIDAD (MALAS PRÁCTICAS)
+
+# El atacante no hace routing, solo escucha
 sysctl -w net.ipv4.ip_forward=0
-echo "net.ipv4.ip_forward=0">/etc/sysctl.d/99-kali-lab.conf
+echo "net.ipv4.ip_forward=0" > /etc/sysctl.d/99-kali-lab.conf
 
-#Crear directorios de trabajo del atacante para guardar datos.
+# Crear directorios de trabajo del atacante
 mkdir -p /home/vagrant/lab/{recon,captures,exploits}
 chown -R vagrant:vagrant /home/vagrant/lab
 
+# Alias útiles para las prácticas
+cat >> /home/vagrant/.bashrc << 'EOF'
+# Insecure-network-lab aliases
+alias nmap-quick='nmap -sV -T4 --open'
+alias nmap-full='nmap -sV -sC -O -p- -T4'
+alias iface='ip -br addr show'
+alias targets='echo "DMZ: 192.168.57.10"; echo "Internal: 192.168.58.10"'
+EOF
+
+# Configuración SSH para evitar confirmaciones de host
 mkdir -p /home/vagrant/.ssh
 chmod 700 /home/vagrant/.ssh
 cat > /home/vagrant/.ssh/config << 'EOF'
