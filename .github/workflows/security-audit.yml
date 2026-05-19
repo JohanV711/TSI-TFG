@@ -32,9 +32,8 @@ jobs:
         with:
           image-ref: tfg-backend:scan
           format: table
-          severity: UNKNOWN,LOW,MEDIUM,HIGH,CRITICAL
+          severity: HIGH,CRITICAL
           exit-code: "1"
-          limit-severities-for-exit-code: HIGH,CRITICAL    #solo esas saltan el exit-code 1
           ignore-unfixed: true    #ignora vulnerabilidades que aún no tienen solución por parte del fabricante.
 
       # - name: Build imagen frontend para escanear
