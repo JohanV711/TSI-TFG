@@ -23,7 +23,7 @@ jobs:
       - uses: actions/checkout@v4      #descarga el código del repositorio dentro de la MV de GitHub donde se ejcuta el flujo de trabajo.
 
       - name: Build de imagen backend para escanear
-        run: docker build -t tfg-backend:scan 1-secure-app/backend/
+        run: docker build -t tfg-backend:scan 1-secure-app/backend/.
 
       - name: Escanear imagen backend
         uses: aquasecurity/trivy-action@master
@@ -34,7 +34,7 @@ jobs:
           exit-code: "1"    #Falla si el pipeline encuentra algo crítico.
 
       # - name: Build imagen frontend para escanear
-      #   run: docker build -t tfg-frontend:scan 1-secure-app/frontend/
+      #   run: docker build -t tfg-frontend:scan 1-secure-app/frontend/.
 
       # - name: Escanear imagen frontend
       #   uses: aquasecurity/trivy-action@master
