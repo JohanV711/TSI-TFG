@@ -79,7 +79,7 @@ jobs:
           cache-to: type=gha,mode=max  #Guarda la caché de este build en GitHub para optimizar ejecuciones futuras.
           
       - name: Escanear imagen con Trivy
-        uses: aquasecurity/trivy-action@v0.29.0
+        uses: aquasecurity/trivy-action@master
         with:
           image-ref: tfg-${{ matrix.service }}:scan  #indica el nombre de la imagen local que Trivy va a usar para auditar.
           format: table    #formato de tablas para los resultados.
