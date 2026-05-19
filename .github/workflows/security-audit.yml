@@ -5,6 +5,7 @@
 name: Security audit
 
 on: 
+  workflow_dispatch:      #Para ejecutar este workflow cuando quiera.
   push:
     branches: [main]
   pull_request:
