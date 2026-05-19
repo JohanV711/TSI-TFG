@@ -3,22 +3,49 @@ name: Notificación Telegram
 
 on:
   push:
-    branches: [main]    
+    branches: [main]
 
 jobs:
   notify:
     runs-on: ubuntu-latest
+
     steps:
+      - name: Checkout completo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Obtener archivos modificados
+        id: changed
+        run: |
+          files=$(git diff --name-only --diff-filter=ACMRT HEAD^ HEAD | sed 's/^/- /')
+          if [ -z "$files" ]; then
+            files="(No se detectaron archivos modificados)"
+          fi
+
+          {
+            echo "files<<EOF"
+            echo "$files"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
       - name: Notificar push a Telegram
         run: |
+          msg=$(cat <<'EOF'
+            <b>TSI-TFG — nuevo push</b>
+            <b>Rama:</b> ${{ github.ref_name }}
+            <b>Autor:</b> ${{ github.actor }}
+            <b>Mensaje:</b> ${{ github.event.head_commit.message }}
+            <b>Commit:</b> <code>${{ github.sha }}</code>
+            
+            <b>Archivos modificados:</b>
+            ${{ steps.changed.outputs.files }}
+            
+            🔗 <a href="${{ github.event.head_commit.url }}">Ver commit</a>
+            EOF
+                      )
+
           curl -s -X POST "https://api.telegram.org/bot${{ secrets.TOKEN_TELEGRAM_BOT }}/sendMessage" \
             -d chat_id="${{ secrets.CHAT_ID_TELEGRAM }}" \
             -d parse_mode="HTML" \
-            -d text="
-          <b>TSI-TFG — nuevo push</b>
-          <b>Rama:</b> ${{ github.ref_name }}
-          <b>Autor:</b> ${{ github.actor }}
-          <b>Mensaje:</b> ${{ github.event.head_commit.message }}
-          <b>Commit:</b> <code>${{ github.sha }}</code>
-          
-          🔗 <a href='${{ github.event.head_commit.url }}'>Ver commit</a>"
+            --data-urlencode text="$msg"
