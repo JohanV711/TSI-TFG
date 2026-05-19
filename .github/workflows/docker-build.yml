@@ -1,3 +1,9 @@
+#Workflow para comprobar de manera automática si el proyecto 1-secure-app se puede construir y levantar correctamente en Docker 
+#cada vez que se hace push o pull request a main.
+
+#1. Construye las imágenes Docker de los servicios (backend, frontend, nginx).
+#2. Comprueba que Docker Compose funciona y levanta todo si errores.
+
 name: Docker build
 
 on:
