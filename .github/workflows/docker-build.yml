@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest               #Runner de Linux para GitHub Actions.
     strategy:
       matrix:
-        service: [backend, db]
+        service: [backend, database]
       fail-fast: false                   #que sigan los demás aunque uno falle
 
     steps:
