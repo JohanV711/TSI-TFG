@@ -1,0 +1,24 @@
+#workflow para notificar a un bot de telegrm cambios subidos al repositorio
+name: Notificación Telegram
+
+on:
+  push:
+    branches: [main]    
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notificar push a Telegram
+        run: |
+          curl -s -X POST "https://api.telegram.org/bot${{ secrets.TOKEN_TELEGRAM_BOT }}/sendMessage" \
+            -d chat_id="${{ secrets.CHAT_ID_TELEGRAM }}" \
+            -d parse_mode="HTML" \
+            -d text="
+          <b>TSI-TFG — nuevo push</b>
+          <b>Rama:</b> ${{ github.ref_name }}
+          <b>Autor:</b> ${{ github.actor }}
+          <b>Mensaje:</b> ${{ github.event.head_commit.message }}
+          <b>Commit:</b> <code>${{ github.sha }}</code>
+          
+          🔗 <a href='${{ github.event.head_commit.url }}'>Ver commit</a>"
