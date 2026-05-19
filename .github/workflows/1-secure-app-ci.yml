@@ -8,7 +8,7 @@
 #es un catálogo público y estandarizado que identifica fallos de seguridad conocidos en programas y 
 #equipos informáticos
 
-name: CI & Security Pipeline
+name: 1-secure-app CI & Security Pipeline
 
 on:
   workflow_dispatch:
