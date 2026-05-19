@@ -1,0 +1,123 @@
+#CI & Security Pipeline para 1-secure-app.
+#Flujo completo en 3 fases:
+#Fase 1 - Análisis estático: secrets (Gitleaks) y buenas prácticas en Dockerfiles (Hadolint).
+#Fase 2 - Build + escaneo CVE: construye imágenes y las analiza con Trivy.
+#Fase 3 - Orquestación: valida y levanta el stack completo con Docker Compose.
+
+# Un CVE (Common Vulnerabilities and Exposures o Vulnerabilidades y Exposiciones Comunes) 
+#es un catálogo público y estandarizado que identifica fallos de seguridad conocidos en programas y 
+#equipos informáticos
+
+name: CI & Security Pipeline
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]    #Se ejecuta este workflow cuando se hace push a main. 
+  schedule:
+    - cron: "0 8 * * 1" #Ejecución automática de este workflow todos los lunes a las 8:00 UTC.
+
+jobs:
+  # FASE 1: ANÁLISIS ESTÁTICO
+  gitleaks:
+    name: Gitleaks - Detección de secrets
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4    #Descarga el archivo del repositorio de este workflow.
+        with:
+          fetch-depth: 0 #Necesario para revisar todo el historial de git.
+          
+      - name: Escanear secrets con Gitleaks
+        uses: gitleaks/gitleaks-action@v2            #Acción oficial de Gitleaks para escanear el respositorio.
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  #Token interno para autenticar la acción con la API de Github
+
+  hadolint:
+    name: Hadolint - Buenas prácticas en Dockerfiles
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        dockerfile:
+          - 1-secure-app/backend/Dockerfile
+          # - 1-secure-app/frontend/Dockerfile
+          # - 1-secure-app/nginx/Dockerfile
+          
+    steps:
+      - uses: actions/checkout@v4
+      - name: Lint ${{ matrix.dockerfile }}      #Muestra de forma dinámica o en vivo el Dockerfile que se está analizando.
+        uses: hadolint/hadolint-action@v3.1.0    #Acción de Hadolint para validar la sintaxis y optimización del Dockerfile.
+        with:
+          dockerfile: ${{ matrix.dockerfile }}    #Indica la ruta del archivo Docckerfile actual según la matrix.
+          failure-threshold: warning              #indica al flujo que falle si el Dockerfile tiene errores de nivel warning o superiores.
+
+  # FASE 2: BUILD Y ESCANEO DE IMÁGENES
+  build-and-scan:
+    name: Build & Scan - ${{ matrix.service }}
+    runs-on: ubuntu-latest
+    needs: [gitleaks, hadolint] #El código debe estar limpio antes de construir.
+    strategy:
+      matrix:
+        service: 
+          - backend
+          # - frontend
+          # - nginx
+      fail-fast: false #Si falla un servicio, los demás siguen ejecutándose.
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3            #Configurar Buildx para permitir funciones avanzadas de compilación en Docker.
+        
+      - name: Construir imagen ${{ matrix.service }}
+        uses: docker/build-push-action@v5              #Acción oficial de Docker encargada del proceso de empaquetado del contenedor.
+        with:
+          context: 1-secure-app/${{ matrix.service }}
+          tags: tfg-${{ matrix.service }}:scan        #Define el nombre local de la imagen creada en la MV de github.
+          push: false         #para no subir esa imagen creada a un repositorio público de contenedores como Docker Hub.
+          load: true         #Carga la imagen en el daemon local para que Trivy pueda acceder.
+          cache-from: type=gha        #Ayuda a que se descarguen y reutilicen capas compiladas previamente.
+          cache-to: type=gha,mode=max  #Guarda la caché de este build en GitHub para optimizar ejecuciones futuras.
+          
+      - name: Escanear imagen con Trivy
+        uses: aquasecurity/trivy-action@v0.29.0
+        with:
+          image-ref: tfg-${{ matrix.service }}:scan  #indica el nombre de la imagen local que Trivy va a usar para auditar.
+          format: table    #formato de tablas para los resultados.
+          severity: HIGH,CRITICAL
+          exit-code: "1"
+          ignore-unfixed: true #Ignora CVEs sin parche disponible del fabricante.
+
+  # FASE 3: VERIFICACIÓN DE ORQUESTACIÓN
+  compose-check:
+    name: Docker Compose - Validación de sistema
+    runs-on: ubuntu-latest
+    needs: build-and-scan #Solo se ejecuta si todas las imágenes pasaron el escaneo.
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Copiar variables de entorno de ejemplo
+        working-directory: 1-secure-app
+        run: cp .env.example .env
+        
+      - name: Validar sintaxis de docker-compose.yml
+        working-directory: 1-secure-app
+        run: docker compose config --quiet
+        
+      - name: Levantar servicios
+        working-directory: 1-secure-app
+        run: docker compose up -d --build
+        
+      - name: Verificar que todos los contenedores están activos
+        run: |
+          docker compose -f 1-secure-app/docker-compose.yml ps
+          #El pipeline va a fallar si algún contenedor está caído, hay que tener eso en cuenta.
+          if docker compose -f 1-secure-app/docker-compose.yml ps | grep -qE "Exit|exited"; then
+            echo "Uno o más contenedores se han caído tras el arranque."
+            exit 1
+          fi
+          echo "Todos los contenedores están corriendo correctamente."
+          
+      - name: Bajar servicios y limpiar volúmenes
+        if: always() #Se ejecuta aunque pasos anteriores fallen.
+        working-directory: 1-secure-app
+        run: docker compose down -v
