@@ -24,7 +24,7 @@ jobs:
 
       - name: Build de imagen backend para escanear
         working-directory: 1-secure-app
-        run: docker build -t tfg-backend:scan backend/
+        run: docker build -t tfg-backend:scan backend/.
 
       - name: Escanear imagen backend
         uses: aquasecurity/trivy-action@master
@@ -75,9 +75,3 @@ jobs:
           dockerfile: ${{ matrix.dockerfile }}
           failure-threshold: warning
           
-
-
-
-
-
-      
