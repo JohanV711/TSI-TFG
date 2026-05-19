@@ -65,12 +65,12 @@ jobs:
           - 1-secure-app/backend/Dockerfile
           # - 1-secure-app/frontend/Dockerfile
           # - 1-secure-app/nginx/Dockerfile
-        steps:
-          - name: Lint ${{ matrix.dockerfile }}
-            uses: hadolint/hadolint-action@v3.1.0
-            with:
-              dockerfile: ${{ matrix.dockerfile }}
-              failure-threshold: warning
+    steps:
+      - name: Lint ${{ matrix.dockerfile }}
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: ${{ matrix.dockerfile }}
+          failure-threshold: warning
           
 
 
