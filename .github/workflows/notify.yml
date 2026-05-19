@@ -13,16 +13,16 @@ jobs:
       - name: Checkout completo
         uses: actions/checkout@v4
         with:
-          fetch-depth: 2 # Trae los 2 últimos commits para poder comparar
+          fetch-depth: 2 #Trae los 2 últimos commits para poder comparar.
 
       - name: Obtener archivos modificados
         id: changed
         run: |
-          # Comprobamos si HEAD^ existe (si hay más de un commit en el historial)
+          #Comprobamos si HEAD^ existe (si hay más de un commit en el historial)
           if git rev-parse --verify HEAD^ >/dev/null 2>&1; then
             files=$(git diff --name-only --diff-filter=ACMRT HEAD^ HEAD | sed 's/^/- /')
           else
-            # Si es el primer commit, listamos todos los archivos del repositorio
+            #Si es el primer commit, listamos todos los archivos del repositorio
             files=$(git ls-files | sed 's/^/- /')
           fi
 
