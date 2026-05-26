@@ -85,7 +85,7 @@ def get_photo(photo_id: UUID,db: Session = Depends(get_db),current_user: models.
     return photo
 
 @router.get("/{photo_id}/file",summary="Servir fichero de imagen")
-def serve_photo(photo_id: UUID,db: Session = Depends(get_db),current_user: models.User = Depends(get_current_active_user)):
+def serve_photo(photo_id: UUID,db: Session = Depends(get_db)):
     photo = crud.get_photo_by_id(db=db, photo_id=photo_id)
     if not photo or photo.user_id != current_user.user_id:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="Foto no encontrada.")
@@ -94,13 +94,15 @@ def serve_photo(photo_id: UUID,db: Session = Depends(get_db),current_user: model
     return FileResponse(path=photo.file_path,media_type=photo.mime_type,filename=f"{photo.photo_id}{os.path.splitext(photo.file_path)[1]}")
 
 @router.get("/{photo_id}/thumbnail",summary="Servir thumbnail de imagen")
-def serve_thumbnail(photo_id: UUID,db: Session = Depends(get_db),current_user: models.User = Depends(get_current_active_user)):
+def serve_thumbnail(photo_id: UUID, db: Session = Depends(get_db)):
     photo = crud.get_photo_by_id(db=db, photo_id=photo_id)
-    if not photo or photo.user_id != current_user.user_id:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="Foto no encontrada.")
+    if not photo:
+        raise HTTPException(status_code=404, detail="Foto no encontrada en BD")
     if not photo.thumbnail_path or not os.path.exists(photo.thumbnail_path):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="Thumbnail no disponible.")
-    return FileResponse(path=photo.thumbnail_path,media_type=photo.mime_type)
+        print(f"DEBUG: No encuentro el archivo en: {photo.thumbnail_path}")
+        raise HTTPException(status_code=404, detail=f"Archivo físico no encontrado en {photo.thumbnail_path}")
+
+    return FileResponse(path=photo.thumbnail_path, media_type=photo.mime_type)
 
 @router.delete("/{photo_id}",status_code=status.HTTP_204_NO_CONTENT,summary="Eliminar foto")
 def delete_photo(photo_id: UUID,db: Session = Depends(get_db),current_user: models.User = Depends(get_current_active_user)):
