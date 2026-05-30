@@ -3,6 +3,14 @@
 set -euo pipefail
 export DEBIAN_FRONTEND=noninteractive
 
+# Forzar DNS funcional para evitar cuelgues
+systemctl stop systemd-resolved 2>/dev/null || true
+systemctl disable systemd-resolved 2>/dev/null || true
+rm -f /etc/resolv.conf
+echo "nameserver 1.1.1.1" > /etc/resolv.conf
+echo "nameserver 1.0.0.1" >> /etc/resolv.conf
+
+
 #Paquetes base
 apt-get update -qq
 apt-get install -y -qq \

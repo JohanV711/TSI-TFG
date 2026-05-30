@@ -6,19 +6,23 @@ Vagrant.configure("2") do |config|
   config.vm.define "external-kali" do |kali|
     kali.vm.box = "kalilinux/rolling"
     kali.vm.hostname = "external-kali"
+    kali.vm.box_check_update=false
     
     # Red externa - SOLO interna
     kali.vm.network "private_network", ip: "100.70.9.10", 
       virtualbox__intnet: "net-externa"
     
+    #Puerto para noVNC y poder acceder desde http://localhost:8081
+    kali.vm.network "forwarded_port", guest: 8080, host: 8081
+    
     kali.vm.provider "virtualbox" do |vb|
       vb.name = "external-kali-mv"
-      vb.memory = 1024 
+      vb.memory = 2048
       vb.cpus = 1
       vb.gui = false
       vb.customize ["modifyvm", :id, "--audio", "none"]
       vb.customize ["modifyvm", :id, "--usb", "off"]
-      vb.customize ["modifyvm", :id, "--vram", "8"]
+      vb.customize ["modifyvm", :id, "--vram", "16"]
       # Desactivar promiscuo en la interfaz de gestión
       vb.customize ["modifyvm", :id, "--nicpromisc1", "deny"]
       # Permitir en la red de laboratorio
@@ -29,6 +33,8 @@ Vagrant.configure("2") do |config|
     end
     
     kali.vm.provision "shell", path: "scripts/external-kali/setup.sh", 
+      privileged: true
+    kali.vm.provision "shell", path: "scripts/external-kali/gui.sh", 
       privileged: true
   end
 

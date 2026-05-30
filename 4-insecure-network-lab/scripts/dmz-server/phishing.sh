@@ -348,8 +348,8 @@ systemctl restart apache2
 touch /var/log/phishing.log
 chmod 666 /var/log/phishing.log
 
-echo "[internal-server] Phishing page desplegada en http://192.168.57.10:8080"
-echo "[internal-server] Credenciales capturadas en: /var/log/phishing.log"
+echo "[dmz-server] Phishing page desplegada en http://192.168.57.10:8080"
+echo "[dmz-server] Credenciales capturadas en: /var/log/phishing.log"
 echo "[dmz-server] Para recoger credenciales desde Kali:"
 echo "ssh ftpoperator@192.168.57.10"
 echo "cat /var/log/phishing.log"

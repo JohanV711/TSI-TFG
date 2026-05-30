@@ -4,8 +4,17 @@
 # Red 100.70.9.0/24, ip: 100.70.9.10. Sin salida a internet
 set -euo pipefail
 
-# Actualización mínima del sistema.
+
 export DEBIAN_FRONTEND=noninteractive
+
+
+# Forzar DNS funcional para evitar cuelgues
+systemctl stop systemd-resolved 2>/dev/null || true
+systemctl disable systemd-resolved 2>/dev/null || true
+rm -f /etc/resolv.conf
+echo "nameserver 1.1.1.1" > /etc/resolv.conf
+echo "nameserver 1.0.0.1" >> /etc/resolv.conf
+
 apt-get update -qq
 
 # Se instalan herramientas complementarias no incluidas en la box base.

@@ -1,6 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
+
 export DEBIAN_FRONTEND=noninteractive
+
+# Forzar DNS funcional para evitar cuelgues
+systemctl stop systemd-resolved 2>/dev/null || true
+systemctl disable systemd-resolved 2>/dev/null || true
+rm -f /etc/resolv.conf
+echo "nameserver 1.1.1.1" > /etc/resolv.conf
+echo "nameserver 1.0.0.1" >> /etc/resolv.conf
 
 #Paquetes base
 apt-get update -qq
@@ -44,21 +52,14 @@ grep -q '^bind-address' /etc/mysql/mysql.conf.d/mysqld.cnf \
 systemctl restart mysql
 sleep 5
 
-#Comprobar si root ya tiene acceso desde cualquier host
-ROOT_CONFIGURED=$(mysql -u root \
-  -e "SELECT host FROM mysql.user WHERE user='root' AND host='%';" \
-  2>/dev/null | grep -c '%' || true)
-
-if [ "$ROOT_CONFIGURED" -eq 0 ]; then
-  mysql -u root << 'SQL'
+# MySQL: permitir conexiones remotas sin contraseña SIN ELIMINAR el acceso local
+mysql -u root << 'SQL'
 ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '';
-UPDATE mysql.user SET host='%' WHERE user='root' AND host='localhost';
+CREATE USER IF NOT EXISTS 'root'@'%' IDENTIFIED WITH mysql_native_password BY '';
+GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' WITH GRANT OPTION;
 FLUSH PRIVILEGES;
 SQL
-  echo "MySQL root configurado sin contraseña."
-else
-  echo "MySQL root ya estaba configurado, omitiendo ALTER USER."
-fi
+echo "MySQL root configurado sin contraseña (local + remoto)."
 
 #SAMBA.
 mkdir -p /srv/samba/confidential
