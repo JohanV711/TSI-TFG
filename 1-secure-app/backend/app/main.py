@@ -4,22 +4,20 @@ from .configuration import settings
 from .database import engine
 from . import models
 from .routers import authentication, albums, photos
-import os #para pruebas de Johan, eliminar.
 
-PROXY_PATH=os.getenv("PROXY_ROOT_PATH", "") 
 
 #Esto crea las tablas en caso de que no existan.
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Secure-app API",
-    docs_url="/docs", redoc_url="/redoc", #desactivar el SWAGGER en producción.
-    root_path=PROXY_PATH #Para servidor remoto de desarrollo , cosas de desarrollo, comentar cuando no se necesite.
+    docs_url=None, redoc_url=None, #desactivar el SWAGGER en producción.
+    redirect_slashes=False
     ) 
 
 #CORS permite el origen del frontend.
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"], #puerto por defecto de react+vite.
+    allow_origins=["http://localhost:5173", "https://localhost"], #puerto por defecto de react+vite.
     allow_credentials=True,
     allow_methods=["GET","POST", "PUT", "DELETE"],
     allow_headers=["Authorization", "Content-Type"]

@@ -46,7 +46,7 @@ USER appuser
 
 #CMD se usa para definir el comando que se escribirá por defecto al iniciar el contenedor.
 #En este caso, como se va a usar Uvicorn que sirve como servidor backend rápido, usamos el siguiente comando:
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]          
-#reload se mantiene sólo en desarrollo
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]          
+#reload se mantiene sólo en desarrollo, en producci´pon se quitaría.
 #Con ese comando le decimos al contenedor que esuchce en todas sus interfaces de la red 
 #interna de docker y sea accesible por el puerto 8000 a otros contenedores que estén en la misma red.

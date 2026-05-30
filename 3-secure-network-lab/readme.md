@@ -2,6 +2,11 @@
 
 Laboratorio de red segura virtualizado con OPNsense como firewall principal, segmentación en DMZ y VLANs, y acceso remoto mediante OpenVPN. Diseñado como contraste positivo del Bloque 4 (Insecure Network Lab), implementando buenas prácticas del Esquema Nacional de Seguridad (ENS).
 
+# Usuario y contraseña de opensense para todos los usuarios que se van a crear
+Usuario: root
+Contraseña: Contraseniarobustademinimo16caracteres!.
+Obviamente esto en la realidad se debe cambiar.
+
 ## Arquitectura
 
 ```
@@ -16,10 +21,7 @@ Laboratorio de red segura virtualizado con OPNsense como firewall principal, seg
                          172.16.0.10   VLAN10        VLAN20
                                      Gestión      Servidores
                                   192.168.10.x   192.168.20.x
-                                        │
-                                     VLAN30
-                                    Invitados
-                                  192.168.30.x
+                                       
 ```
 
 | Segmento | Red | Propósito |
@@ -185,6 +187,6 @@ VBoxManage controlvm snl-opensense keyboardputscancode 1c 9c
 ## Notas técnicas
 
 - La box `snl-opensense/snl-opensense` contiene OPNsense 25.1.12 preinstalado sobre FreeBSD 14.1
-- El firewall pf está configurado para permitir acceso a la WebUI desde la interfaz de gestión (em4)
+- El firewall está configurado para que se pueda acceder a través de WAN para configurarlo pero SÓLO ES PARA ADMINISTRACIÓN, en la vida real lo más seguro es tener acceso físico a través de la VLAN de gestión.
 - Las interfaces de red se asignan en este orden: em0 NAT Vagrant, em1 WAN, em2 LAN trunk, em3 DMZ, em4 gestión host-only
 - Para acceso remoto mediante OpenVPN, consulta la sección correspondiente de la memoria del TFG

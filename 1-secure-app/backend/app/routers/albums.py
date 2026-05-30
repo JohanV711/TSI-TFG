@@ -9,11 +9,11 @@ from ..dependencies import get_current_active_user
 
 router = APIRouter()
 
-@router.get("", response_model=list[schemas.AlbumResponse], summary="Listar álbunes del usuario autenticado.")
+@router.get("/", response_model=list[schemas.AlbumResponse], summary="Listar álbunes del usuario autenticado.")
 def get_albums(db:Session=Depends(get_db), current_user: models.User=Depends(get_current_active_user)):
     return crud.get_albums_by_user(db=db, user_id=current_user.user_id)
 
-@router.post("", response_model=schemas.AlbumResponse, status_code=status.HTTP_201_CREATED, summary="Crear nuevo álbum.")
+@router.post("/", response_model=schemas.AlbumResponse, status_code=status.HTTP_201_CREATED, summary="Crear nuevo álbum.")
 def create_album(album_data: schemas.AlbumCreate, db: Session= Depends(get_db), current_user: models.User=Depends(get_current_active_user)):
     existing = crud.get_album_by_name(db=db, user_id=current_user.user_id, name=album_data.name)
     if existing:

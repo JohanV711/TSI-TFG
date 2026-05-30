@@ -50,3 +50,8 @@ snl-opnsense/
 
 #scripts de limpieza
 4-insecure-network-lab/cleanup-lab.sh
+3-secure-network-lab/cleanup-lab.sh
+3-secure-network-lab/recover-opnsense.sh
+
+#Certificados
+nginx/certs/

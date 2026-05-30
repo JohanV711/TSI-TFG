@@ -13,15 +13,30 @@ services:
 
   backend:
     build: ./backend
-    ports:
-      - "8000:8000" #SÓLO PARA DESARROLLO, quitarlo cuando se termine.
     volumes:
       - uploads_data:/app/uploads
-      - ./backend/app:/app/app #SÓLO PARA DESARROLLO, para que se reflejen los cambios que se hagan en backend/app directamente dentro del contenedor.
     env_file:
       - .env
     depends_on:
       - db
+    networks:
+      - app_net
+
+  frontend-build: #Este contenedor no arranca, solo construye el build del frontend.
+    build: ./frontend
+    image: frontend-build
+    command: echo "Build completado"
+
+  nginx:
+    build:
+      context: .
+      dockerfile: ./nginx/Dockerfile
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on: 
+      - backend
+      - frontend-build
     networks:
       - app_net
 

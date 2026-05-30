@@ -56,14 +56,20 @@ def _save_files(content: bytes, mime_type: str) -> tuple[str, str]:
     image.save(thumb_path)
     return file_path, thumb_path
 
-@router.get("",response_model=list[schemas.PhotoResponse],summary="Listar fotos de un álbum")
-def get_photos(album_id: UUID,db: Session = Depends(get_db),current_user: models.User = Depends(get_current_active_user)):
+@router.get("", response_model=list[schemas.PhotoResponse], summary="Listar fotos de un álbum")
+@router.get("/", response_model=list[schemas.PhotoResponse], include_in_schema=False)
+def get_photos(
+    album_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_active_user)
+):
     album = crud.get_album_by_id(db=db, album_id=album_id)
     if not album or album.user_id != current_user.user_id:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="Álbum no encontrado.")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Álbum no encontrado.")
     return crud.get_photos_by_album(db=db, album_id=album_id)
 
 @router.post("",response_model=schemas.PhotoResponse,status_code=status.HTTP_201_CREATED,summary="Subir foto a un álbum")
+@router.post("/",response_model=schemas.PhotoResponse,status_code=status.HTTP_201_CREATED, include_in_schema=False)
 def upload_photo(album_id: UUID,title: str = None,file: UploadFile = File(...),db: Session = Depends(get_db),current_user: models.User = Depends(get_current_active_user)):
     # Verificar propiedad del álbum.
     album = crud.get_album_by_id(db=db, album_id=album_id)
@@ -84,24 +90,34 @@ def get_photo(photo_id: UUID,db: Session = Depends(get_db),current_user: models.
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="Foto no encontrada.")
     return photo
 
-@router.get("/{photo_id}/file",summary="Servir fichero de imagen")
-def serve_photo(photo_id: UUID,db: Session = Depends(get_db)):
+@router.get("/{photo_id}/file", summary="Servir fichero de imagen")
+def serve_photo(
+    photo_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_active_user)
+):
     photo = crud.get_photo_by_id(db=db, photo_id=photo_id)
     if not photo or photo.user_id != current_user.user_id:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="Foto no encontrada.")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Foto no encontrada.")
     if not os.path.exists(photo.file_path):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="Fichero no encontrado en el servidor.")
-    return FileResponse(path=photo.file_path,media_type=photo.mime_type,filename=f"{photo.photo_id}{os.path.splitext(photo.file_path)[1]}")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Fichero no encontrado en el servidor.")
+    return FileResponse(
+        path=photo.file_path,
+        media_type=photo.mime_type,
+        filename=f"{photo.photo_id}{os.path.splitext(photo.file_path)[1]}"
+    )
 
-@router.get("/{photo_id}/thumbnail",summary="Servir thumbnail de imagen")
-def serve_thumbnail(photo_id: UUID, db: Session = Depends(get_db)):
+@router.get("/{photo_id}/thumbnail", summary="Servir thumbnail de imagen")
+def serve_thumbnail(
+    photo_id: UUID,
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_active_user)
+):
     photo = crud.get_photo_by_id(db=db, photo_id=photo_id)
-    if not photo:
-        raise HTTPException(status_code=404, detail="Foto no encontrada en BD")
+    if not photo or photo.user_id != current_user.user_id:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Foto no encontrada.")
     if not photo.thumbnail_path or not os.path.exists(photo.thumbnail_path):
-        print(f"DEBUG: No encuentro el archivo en: {photo.thumbnail_path}")
-        raise HTTPException(status_code=404, detail=f"Archivo físico no encontrado en {photo.thumbnail_path}")
-
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Thumbnail no disponible.")
     return FileResponse(path=photo.thumbnail_path, media_type=photo.mime_type)
 
 @router.delete("/{photo_id}",status_code=status.HTTP_204_NO_CONTENT,summary="Eliminar foto")
