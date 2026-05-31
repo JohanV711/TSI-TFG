@@ -74,24 +74,24 @@ Vagrant.configure("2") do |config|
       virtualbox__intnet:  "net-wan",
       nic_type:            "82540EM"
 
-      #para navegador con interfaz gráfica
-    kali.vm.network "forwarded_port",
-      guest: 6080, host: 6080
+    #para navegador con interfaz gráfica, dentro del host escuchará en 6080.
+    kali.vm.network "forwarded_port", guest: 8081, host: 8081
 
     kali.vm.provider "virtualbox" do |vb|
       vb.name   = "snl-external-kali"
-      vb.memory = 1536
-      vb.cpus   = 1
+      vb.memory = 2560
+      vb.cpus   = 2
       vb.gui    = false
       vb.customize ["modifyvm", :id, "--audio",             "none"]
       vb.customize ["modifyvm", :id, "--usb",               "off"]
-      vb.customize ["modifyvm", :id, "--vram",              "8"]
+      vb.customize ["modifyvm", :id, "--vram",              "16"]
       vb.customize ["modifyvm", :id, "--nicpromisc2",       "allow-all"]
       vb.customize ["modifyvm", :id, "--natdnshostresolver1", "off"]
       vb.customize ["modifyvm", :id, "--natdnsproxy1",      "off"]
     end
 
     kali.vm.provision "shell", path: "scripts/external-kali/setup.sh", privileged: true
+    kali.vm.provision "shell", path: "scripts/external-kali/gui.sh", privileged: true
   end
 
   # DMZ Server — servidor web público
@@ -118,37 +118,6 @@ Vagrant.configure("2") do |config|
     end
 
     dmz.vm.provision "shell", path: "scripts/dmz-server/setup.sh", privileged: true
-  end
-
-  # VLAN10 Gestión — administración y acceso WebUI OPNsense
-  # IP: 192.168.10.10
-  # Acceso navegador via noVNC: http://localhost:6081/vnc.html
-  config.vm.define "gestion-vm" do |gestion|
-    gestion.vm.box          = "ubuntu/jammy64"
-    gestion.vm.hostname     = "gestion-vm"
-    gestion.vm.boot_timeout = 600
-
-    gestion.vm.network "private_network",
-      ip:                 "192.168.10.10",
-      virtualbox__intnet: "net-gestion",
-      nic_type:           "82540EM"
-
-    gestion.vm.network "forwarded_port",
-      guest: 6080, host: 6081
-
-    gestion.vm.provider "virtualbox" do |vb|
-      vb.name   = "snl-gestion-vm"
-      vb.memory = 512
-      vb.cpus   = 1
-      vb.gui    = false
-      vb.customize ["modifyvm", :id, "--audio",             "none"]
-      vb.customize ["modifyvm", :id, "--usb",               "off"]
-      vb.customize ["modifyvm", :id, "--vram",              "8"]
-      vb.customize ["modifyvm", :id, "--natdnshostresolver1", "off"]
-      vb.customize ["modifyvm", :id, "--natdnsproxy1",      "off"]
-    end
-
-    gestion.vm.provision "shell", path: "scripts/gestion-vm/setup.sh", privileged: true
   end
 
   # VLAN20 Servidores — MySQL con datos sensibles

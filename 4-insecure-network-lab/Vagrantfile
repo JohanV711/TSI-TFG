@@ -17,8 +17,8 @@ Vagrant.configure("2") do |config|
     
     kali.vm.provider "virtualbox" do |vb|
       vb.name = "external-kali-mv"
-      vb.memory = 2048
-      vb.cpus = 1
+      vb.memory = 2560
+      vb.cpus = 2
       vb.gui = false
       vb.customize ["modifyvm", :id, "--audio", "none"]
       vb.customize ["modifyvm", :id, "--usb", "off"]

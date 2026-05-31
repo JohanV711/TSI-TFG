@@ -180,32 +180,7 @@ vagrant destroy -f
 Asegúrate de que el puerto 8081 del servidor es accesible desde tu equipo:
 
 ```bash
-# En el servidor
 sudo ufw allow from 192.168.1.0/24 to any port 8081 proto tcp
-```
-
-### Conexión directa
-
-Averigua la IP de tu servidor en la red local:
-
-```bash
-ip addr show | grep "192.168.1"
-```
-
-Abre en tu navegador:
-
-```text
-http://<IP_DEL_SERVIDOR>:8081/vnc.html
-```
-
-Pulsa **Connect** (no hay contraseña).
-
-### Alternativa segura: túnel SSH
-
-Desde tu equipo (PowerShell o terminal):
-
-```bash
-ssh -L 8081:localhost:8081 mangoadmin@<IP_DEL_SERVIDOR>
 ```
 
 Luego abre en el navegador:

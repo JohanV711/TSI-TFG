@@ -7,7 +7,7 @@
 # Principios de seguridad aplicados:
 #   - MySQL escucha SOLO en 192.168.20.10 (no en 0.0.0.0)
 #   - webuser con permisos mínimos solo desde 172.16.0.10
-#   - Ruta de vuelta hacia DMZ persistente via rc.local
+#   - Rutas persistentes via netplan hacia todas las redes internas y VPN
 #   - Paquetes instalados ANTES de cambiar rutas
 # =============================================================================
 
@@ -26,29 +26,34 @@ echo "[*] Instalando MySQL Server..."
 DEBIAN_FRONTEND=noninteractive apt-get install -y mysql-server 2>/dev/null
 
 # -----------------------------------------------------------------------------
-# PASO 2 — Ruta persistente hacia DMZ y gestión
+# PASO 2 — Rutas persistentes via netplan
 # Se configura DESPUÉS de instalar paquetes
 # Necesaria para que MySQL pueda responder al webserver en DMZ
+# y para que los clientes VPN admin puedan alcanzar esta máquina
 # -----------------------------------------------------------------------------
-echo "[*] Configurando rutas persistentes hacia redes internas..."
-cat > /etc/rc.local << 'EOF'
-#!/bin/bash
-# Ruta hacia DMZ — necesaria para que MySQL responda al webserver
-ip route add 172.16.0.0/24 via 192.168.20.1 dev enp0s8 2>/dev/null || true
-
-# Ruta hacia red de gestión — para administración via VPN admin
-ip route add 192.168.10.0/24 via 192.168.20.1 dev enp0s8 2>/dev/null || true
-
-exit 0
+echo "[*] Configurando rutas persistentes hacia redes internas y VPN..."
+cat > /etc/netplan/99-lab-routes.yaml << 'EOF'
+network:
+  version: 2
+  ethernets:
+    enp0s8:
+      routes:
+        - to: 172.16.0.0/24
+          via: 192.168.20.1
+        - to: 192.168.10.0/24
+          via: 192.168.20.1
+        - to: 10.10.1.0/24
+          via: 192.168.20.1
+        - to: 10.10.2.0/24
+          via: 192.168.20.1
 EOF
-chmod +x /etc/rc.local
+netplan apply
 
-# Activar rc-local como servicio systemd
-systemctl enable rc-local 2>/dev/null || true
-
-# Aplicar rutas ahora sin esperar al reinicio
+# Aplicar también ahora sin esperar al reinicio
 ip route add 172.16.0.0/24 via 192.168.20.1 dev enp0s8 2>/dev/null || true
 ip route add 192.168.10.0/24 via 192.168.20.1 dev enp0s8 2>/dev/null || true
+ip route add 10.10.1.0/24 via 192.168.20.1 dev enp0s8 2>/dev/null || true
+ip route add 10.10.2.0/24 via 192.168.20.1 dev enp0s8 2>/dev/null || true
 
 # -----------------------------------------------------------------------------
 # PASO 3 — Hardening de MySQL
@@ -98,9 +103,9 @@ INSERT INTO empleados (nombre, departamento, email, salario) VALUES
   ('Pedro Gomez',   'Direccion',      'pedro@empresa.lab',  65000.00);
 
 INSERT INTO accesos (usuario, ip_origen, resultado) VALUES
-  ('ana',    '10.10.0.2',   'exito'),
-  ('hacker', '91.168.50.10','fallo'),
-  ('carlos', '10.10.0.2',   'exito');
+  ('ana',    '10.10.0.2',    'exito'),
+  ('hacker', '91.168.50.10', 'fallo'),
+  ('carlos', '10.10.0.2',    'exito');
 
 -- Principio de mínimo privilegio:
 -- webuser SOLO puede SELECT en empleados
@@ -121,19 +126,8 @@ systemctl restart mysql
 echo ""
 echo "=================================================="
 echo " vlan20-server configurado correctamente"
-echo " IP:            192.168.20.10"
-echo " Gateway rutas: 192.168.20.1 (OPNsense VLAN20)"
-echo ""
-echo " MySQL escuchando en: 192.168.20.10:3306"
-echo " Base de datos: empresa"
-echo " Tablas: empleados, accesos"
-echo ""
-echo " webuser:"
-echo "   Solo desde:   172.16.0.10 (dmz-server)"
-echo "   Solo permite: SELECT en empleados"
-echo ""
-echo " Triple restricción activa:"
-echo "   1. Firewall OPNsense (VLAN20-BLOCK)"
-echo "   2. MySQL bind-address = 192.168.20.10"
-echo "   3. webuser restringido por IP origen"
+echo " IP:           192.168.20.10"
+echo " Gateway:      192.168.20.1 (OPNsense VLAN20)"
+echo " MySQL:        192.168.20.10:3306 (solo desde 172.16.0.10)"
+echo " Acceso admin: solo via VPN wg-admins (10.10.1.0/24)"
 echo "=================================================="
