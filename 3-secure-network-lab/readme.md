@@ -1,1 +1,2 @@
-readme
+Usuario: root
+Contraseña: Contraseniarobustademinimo16caracteres!.
