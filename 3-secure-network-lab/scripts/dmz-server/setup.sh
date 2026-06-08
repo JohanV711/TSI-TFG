@@ -32,21 +32,43 @@ pip3 install flask mysql-connector-python --quiet 2>/dev/null || true
 echo "[*] Configurando rutas persistentes hacia OPNsense DMZ..."
 cat > /etc/rc.local << 'EOF'
 #!/bin/bash
-# Ruta por defecto hacia OPNsense interfaz DMZ
 ip route del default 2>/dev/null || true
 ip route add default via 172.16.0.1 dev enp0s8 2>/dev/null || true
-
-# Ruta hacia VLAN20 (base de datos)
 ip route add 192.168.20.0/24 via 172.16.0.1 dev enp0s8 2>/dev/null || true
-
-# Rutas de retorno hacia clientes VPN
 ip route add 10.10.1.0/24 via 172.16.0.1 dev enp0s8 2>/dev/null || true
 ip route add 10.10.2.0/24 via 172.16.0.1 dev enp0s8 2>/dev/null || true
-
 exit 0
 EOF
 chmod +x /etc/rc.local
 systemctl enable rc-local 2>/dev/null || true
+cat > /etc/netplan/99-lab-routes.yaml << 'EOF'
+network:
+  version: 2
+  ethernets:
+    enp0s3:
+      dhcp4: true
+      dhcp4-overrides:
+        use-routes: false
+        use-dns: false
+      dhcp6-overrides:
+        use-routes: false
+        use-dns: false
+    enp0s8:
+      routes:
+        - to: default
+          via: 172.16.0.1
+        - to: 192.168.20.0/24
+          via: 172.16.0.1
+        - to: 192.168.10.0/24
+          via: 172.16.0.1
+        - to: 10.10.1.0/24
+          via: 172.16.0.1
+        - to: 10.10.2.0/24
+          via: 172.16.0.1
+      nameservers:
+        addresses: [172.16.0.1]
+EOF
+netplan apply
 
 # Aplicar rutas ahora sin esperar al reinicio
 ip route del default 2>/dev/null || true
@@ -160,7 +182,13 @@ EOF
 
 systemctl daemon-reload
 systemctl enable webapp nginx
-systemctl start webapp nginx || true
+systemctl start webapp || true
+sleep 2
+systemctl restart nginx
+
+sudo chmod 600 /etc/netplan/99-lab-routes.yaml
+ip route del default via 10.0.2.2 dev enp0s3 2>/dev/null || true
+ip route add default via 172.16.0.1 dev enp0s8 2>/dev/null || true
 
 echo ""
 echo "=================================================="

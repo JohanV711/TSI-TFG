@@ -36,8 +36,18 @@ cat > /etc/netplan/99-lab-routes.yaml << 'EOF'
 network:
   version: 2
   ethernets:
+    enp0s3:
+      dhcp4: true
+      dhcp4-overrides:
+        use-routes: false
+        use-dns: false
+      dhcp6-overrides:
+        use-routes: false
+        use-dns: false
     enp0s8:
       routes:
+        - to: default
+          via: 192.168.20.1
         - to: 172.16.0.0/24
           via: 192.168.20.1
         - to: 192.168.10.0/24
@@ -46,7 +56,10 @@ network:
           via: 192.168.20.1
         - to: 10.10.2.0/24
           via: 192.168.20.1
+      nameservers:
+        addresses: [192.168.20.1]
 EOF
+
 netplan apply
 
 # Aplicar también ahora sin esperar al reinicio
@@ -122,6 +135,10 @@ SQLEOF
 echo "[*] Habilitando MySQL..."
 systemctl enable mysql
 systemctl restart mysql
+
+sudo chmod 600 /etc/netplan/99-lab-routes.yaml
+ip route del default via 10.0.2.2 dev enp0s3 2>/dev/null || true
+ip route add default via 192.168.20.1 dev enp0s8 2>/dev/null || true
 
 echo ""
 echo "=================================================="
