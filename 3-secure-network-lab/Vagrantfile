@@ -108,7 +108,7 @@ Vagrant.configure("2") do |config|
 
     dmz.vm.provider "virtualbox" do |vb|
       vb.name   = "snl-dmz-server"
-      vb.memory = 512
+      vb.memory = 612
       vb.cpus   = 1
       vb.gui    = false
       vb.customize ["modifyvm", :id, "--audio",             "none"]
@@ -134,7 +134,7 @@ Vagrant.configure("2") do |config|
 
     srv.vm.provider "virtualbox" do |vb|
       vb.name   = "snl-vlan20-server"
-      vb.memory = 1024
+      vb.memory = 612
       vb.cpus   = 1
       vb.gui    = false
       vb.customize ["modifyvm", :id, "--audio",             "none"]

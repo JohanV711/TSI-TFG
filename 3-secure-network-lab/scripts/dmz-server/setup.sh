@@ -13,22 +13,15 @@
 set -e
 
 echo "[*] Iniciando configuración de dmz-server (172.16.0.10)..."
-
-# -----------------------------------------------------------------------------
 # PASO 1 — Instalar paquetes usando NAT de Vagrant
-# NO tocar rutas todavía — apt necesita salida a internet por NAT
-# -----------------------------------------------------------------------------
 echo "[*] Actualizando repositorios..."
 apt-get update -qq
 
 echo "[*] Instalando Nginx y Python3..."
-apt-get install -y nginx python3 python3-pip 2>/dev/null
+apt-get install -y nginx python3 python3-pip mariadb-client 2>/dev/null
 pip3 install flask mysql-connector-python --quiet 2>/dev/null || true
 
-# -----------------------------------------------------------------------------
 # PASO 2 — Rutas persistentes via rc.local
-# Se configura DESPUÉS de instalar paquetes
-# -----------------------------------------------------------------------------
 echo "[*] Configurando rutas persistentes hacia OPNsense DMZ..."
 cat > /etc/rc.local << 'EOF'
 #!/bin/bash
@@ -69,17 +62,13 @@ network:
         addresses: [172.16.0.1]
 EOF
 netplan apply
-
-# Aplicar rutas ahora sin esperar al reinicio
 ip route del default 2>/dev/null || true
 ip route add default via 172.16.0.1 dev enp0s8 2>/dev/null || true
 ip route add 192.168.20.0/24 via 172.16.0.1 dev enp0s8 2>/dev/null || true
 ip route add 10.10.1.0/24 via 172.16.0.1 dev enp0s8 2>/dev/null || true
 ip route add 10.10.2.0/24 via 172.16.0.1 dev enp0s8 2>/dev/null || true
 
-# -----------------------------------------------------------------------------
 # PASO 3 — Crear aplicación Flask
-# -----------------------------------------------------------------------------
 echo "[*] Creando aplicación web corporativa..."
 mkdir -p /opt/webapp
 cat > /opt/webapp/app.py << 'EOF'
@@ -139,9 +128,7 @@ EOF
 
 chown -R www-data:www-data /opt/webapp
 
-# -----------------------------------------------------------------------------
 # PASO 4 — Configurar Nginx como proxy inverso
-# -----------------------------------------------------------------------------
 echo "[*] Configurando Nginx como proxy inverso..."
 cat > /etc/nginx/sites-available/default << 'EOF'
 server {
@@ -160,9 +147,7 @@ rm -f /etc/nginx/sites-enabled/default
 ln -s /etc/nginx/sites-available/default /etc/nginx/sites-enabled/default
 nginx -t
 
-# -----------------------------------------------------------------------------
 # PASO 5 — Crear servicio systemd para Flask
-# -----------------------------------------------------------------------------
 echo "[*] Creando servicio systemd para Flask..."
 cat > /etc/systemd/system/webapp.service << 'EOF'
 [Unit]
@@ -189,13 +174,9 @@ systemctl restart nginx
 sudo chmod 600 /etc/netplan/99-lab-routes.yaml
 ip route del default via 10.0.2.2 dev enp0s3 2>/dev/null || true
 ip route add default via 172.16.0.1 dev enp0s8 2>/dev/null || true
-
-echo ""
-echo "=================================================="
 echo " dmz-server configurado correctamente"
 echo " IP:           172.16.0.10"
 echo " Gateway:      172.16.0.1 (OPNsense DMZ)"
 echo " Portal web:   http://172.16.0.10"
 echo " Empleados:    http://172.16.0.10/empleados"
 echo " Acceso:       solo via VPN wg-users y wg-admins"
-echo "=================================================="
