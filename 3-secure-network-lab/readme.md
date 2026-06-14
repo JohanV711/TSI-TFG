@@ -368,8 +368,14 @@ Debe aparecer `latest handshake` reciente y bytes transferidos mayores que 0.
 4. Aceptar la advertencia de *su conexión no es privada*.
 
 5. Introducir las credenciales de administrador configuradas durante el provisionamiento de OPNsense.
-**Usuario**: root
-**Contraseña**: Contraseniarobustademinimo16caracteres!.
+**Usuario**:
+```bash
+root
+```
+**Contraseña**:
+```bash
+Contraseniarobustademinimo16caracteres!.
+```
 
 **Nota:** no existe acceso directo desde el anfitrión a esta WebUI. Todo el tráfico de administración se canaliza obligatoriamente a través del túnel WireGuard, garantizando cifrado y autenticación.
 
