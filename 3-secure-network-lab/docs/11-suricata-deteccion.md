@@ -230,3 +230,7 @@ Las alertas se rotan diariamente y se conservan 7 días. No hay integración con
 Al monitorizar solo WAN y DMZ, el tráfico lateral entre VLAN10, VLAN20 y las interfaces VPN no es inspeccionado por Suricata. En producción, se añadiría un sensor en cada segmento crítico o se implementaría mirroring de puertos en el switch core para enviar todo el tráfico a un sensor dedicado.
 
 **Resumen:** Las limitaciones descritas no invalidan el valor didáctico del laboratorio. Las pruebas de la sección 11.2 demuestran que Suricata detecta correctamente los patrones de ataque más comunes. Las limitaciones son propias del entorno virtualizado y se documentan explícitamente como parte del análisis de riesgos del sistema, en línea con los requisitos de documentación del ENS.
+
+---
+
+[📑 Volver al índice general](../README.md)  |  [← Anterior](10-dns-control-privacidad.md)  |  [Siguiente →](12-logs-trazabilidad-ens.md)

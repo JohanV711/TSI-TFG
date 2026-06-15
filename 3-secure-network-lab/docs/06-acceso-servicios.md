@@ -118,3 +118,6 @@ Resultado: sin respuesta o timeout.
 El portal muestra una página principal con información corporativa simulada y un enlace al listado de empleados. La aplicación Flask que genera el contenido se ejecuta en localhost (`127.0.0.1:5000`) y Nginx actúa como proxy inverso hacia ella. Este diseño evita exponer directamente el servicio de la aplicación al resto de la red.
 Todas estas pruebas se pueden realizar desde el escritorio virtual a través de noVNC también para que sea más intuitivo y visual (usando el navegador por ejemplo).
 
+---
+
+[📑 Volver al índice general](../README.md)  |  [← Anterior](05-diferencias-entorno-real.md)  |  [Siguiente →](07-pruebas-funcionales.md)

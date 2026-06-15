@@ -30,3 +30,7 @@ Los recursos asignados a cada máquina virtual son ajustados para funcionar en u
 - **Almacenamiento:** Los discos virtuales son dinámicos y de tamaño reducido. No se ha implementado redundancia, copias de seguridad ni políticas de retención, aspectos todos ellos obligatorios en un sistema en producción según el ENS.
 
 Estas limitaciones no afectan a los objetivos didácticos del laboratorio, pero deben tenerse en cuenta antes de extrapolar directamente cualquier métrica de rendimiento o seguridad a un entorno corporativo real.
+
+---
+
+[📑 Volver al índice general](../README.md)  |  [← Anterior](04-despliegue-lab.md)  |  [Siguiente →](06-acceso-servicios.md)

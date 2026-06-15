@@ -48,3 +48,7 @@ El diseño presentado es extrapolable a múltiples escenarios empresariales real
   La trazabilidad de todas las reglas de bloqueo, los logs de DNS y las alertas del IDS proporcionan evidencias auditables de que se están aplicando controles de seguridad efectivos.
 
 Esta arquitectura, aunque desplegada en un solo host gracias a la virtualización, es perfectamente escalable a hardware dedicado mediante switches gestionables (VLANs 802.1Q) y múltiples servidores físicos.
+
+---
+
+[📑 Volver al índice general](../README.md)  |  [Siguiente →](02-topologia-red.md)

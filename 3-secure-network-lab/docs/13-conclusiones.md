@@ -157,3 +157,7 @@ Esta mejora convertiría el laboratorio en un entorno completamente desatendido,
 ---
 
 > El conjunto de mejoras descritas representa una hoja de ruta hacia una implantación de nivel empresarial. Cada una de ellas añade una capa adicional de seguridad, visibilidad o resiliencia, y puede implementarse de forma incremental sobre la base de este laboratorio sin necesidad de rediseñar la arquitectura existente.
+
+---
+
+[📑 Volver al índice general](../README.md)  |  [← Anterior](12-logs-trazabilidad-ens.md)

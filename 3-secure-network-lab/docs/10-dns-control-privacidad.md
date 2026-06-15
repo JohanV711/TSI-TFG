@@ -234,3 +234,7 @@ Respuesta cifrada → Unbound la descifra → responde al cliente
 **Relación con ENS:** El cifrado de las comunicaciones DNS implementa la medida de protección de la confidencialidad del ENS. Adicionalmente, el uso de Quad9 como resolver de respaldo aporta una capa de filtrado adicional, ya que Quad9 bloquea dominios maliciosos conocidos antes de resolver.
 
 **Nota sobre Forward Mode:** Para que DoT funcione, Unbound debe estar configurado en modo forwarding (`Enable Forwarding Mode` en `Services → Unbound DNS → General`). Sin esta opción, Unbound resolvería directamente contra los servidores raíz por UDP/53 y las entradas DoT serían ignoradas.
+
+---
+
+[📑 Volver al índice general](../README.md)  |  [← Anterior](09-vpn-wireguard.md)  |  [Siguiente →](11-suricata-deteccion.md)

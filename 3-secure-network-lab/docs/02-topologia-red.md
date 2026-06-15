@@ -69,3 +69,7 @@ La siguiente tabla resume el comportamiento esperado del firewall entre las dist
 | Cualquier cliente VPN (admins/users) | Internet | 80, 443 | **P** | Navegación web a través de OPNsense |
 | Cualquier cliente VPN (admins/users) | DNS (8.8.8.8:53) | 53 UDP | **B** (interceptado) | El firewall redirige el DNS a Unbound; si se usa DNS externo, los dominios prohibidos se bloquean igual |
 | Todos los hosts internos | Instagram, Facebook (dominios) | DNS | **B** (0.0.0.0) | Bloqueo DNS en Unbound |
+
+---
+
+[📑 Volver al índice general](../README.md)  |  [← Anterior](01-introduccion-contexto.md)  |  [Siguiente →](03-requisitos-previos.md)

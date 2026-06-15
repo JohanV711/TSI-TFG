@@ -108,3 +108,7 @@ ip a | grep -E "eth0|eth1"
 
 - `eth0`: NAT propia (`10.0.2.15`).
 - `eth1`: red WAN del lab (`91.168.50.10`).
+
+---
+
+[📑 Volver al índice general](../README.md)  |  [← Anterior](03-requisitos-previos.md)  |  [Siguiente →](05-diferencias-entorno-real.md)

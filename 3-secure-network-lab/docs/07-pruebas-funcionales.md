@@ -355,3 +355,7 @@ curl -s ifconfig.me && echo
 **Resultado esperado:** IP pública de la NAT de Vagrant (diferente a la de OPNsense).
 
 **Explicación:** `external-kali` conserva su interfaz NAT (`eth0`) como ruta por defecto gracias a `never-default` en `eth1`. Esto le permite salir directamente a internet sin pasar por OPNsense, simulando un atacante externo real con su propia conectividad.
+
+---
+
+[📑 Volver al índice general](../README.md)  |  [← Anterior](06-acceso-servicios.md)  |  [Siguiente →](08-control-trafico-firewall.md)

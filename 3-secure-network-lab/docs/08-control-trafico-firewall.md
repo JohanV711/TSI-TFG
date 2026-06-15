@@ -139,3 +139,7 @@ Si apareciera tráfico con esas IPs, indicaría que alguna MV aún conserva la r
 *Figura 5: Salida del comando `ip route show` en dmz-server. Se observa que la ruta por defecto apunta a `172.16.0.1` (OPNsense) y no a la red NAT de VirtualBox.*
 
 **Conclusión:** Todo el tráfico de las máquinas internas hacia el exterior está forzado a pasar por OPNsense. Esto garantiza que las políticas de filtrado, el DNS forzado y la monitorización del IDS se apliquen sin posibilidad de bypass.
+
+---
+
+[📑 Volver al índice general](../README.md)  |  [← Anterior](07-pruebas-funcionales.md)  |  [Siguiente →](09-vpn-wireguard.md)

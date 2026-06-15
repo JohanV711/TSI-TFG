@@ -69,4 +69,7 @@ El Vagrantfile crea cuatro redes internas que no son accesibles desde el anfitri
 - `net-gestion`
 - `net-lan`
 
-No se recomienda modificar esta configuración para mantener la integridad del laboratorio.
+
+---
+
+[📑 Volver al índice general](../README.md)  |  [← Anterior](02-topologia-red.md)  |  [Siguiente →](04-despliegue-lab.md)

@@ -154,3 +154,7 @@ curl -s ifconfig.me
 - El modelo full-tunnel garantiza que incluso el tráfico hacia Internet desde el dispositivo del empleado o administrador esté sujeto a las mismas políticas de filtrado y monitorización que si estuviera físicamente en la oficina. 
 - Para el laboratorio, permite verificar fácilmente que el DNS forzado, el filtrado de dominios y Suricata se aplican al tráfico del cliente VPN, lo que se comprueba en las secciones 10 y 11.
 - Precaución en producción: esta configuración enruta todo el tráfico del cliente hacia la organización, lo que puede generar problemas de rendimiento y consumo de ancho de banda si no se dimensiona adecuadamente. Suele combinarse con una política de split-tunneling para tráfico no sensible, pero aquí se ha empleado full-tunnel por simplicidad y para maximizar el control durante las prácticas.
+
+---
+
+[📑 Volver al índice general](../README.md)  |  [← Anterior](08-control-trafico-firewall.md)  |  [Siguiente →](10-dns-control-privacidad.md)
