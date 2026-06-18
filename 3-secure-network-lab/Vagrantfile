@@ -10,7 +10,8 @@ Vagrant.configure("2") do |config|
   #   em4 → net-lan      → VLAN20 Servidores (192.168.20.1)
   #   em5 → host-only    → Gestión temporal desarrollo (192.168.56.10)
   config.vm.define "opensense" do |fw|
-    fw.vm.box = "snl-opensense/snl-opensense-configured"    fw.vm.box_url = "https://github.com/JohanV711/TSI-TFG/releases/download/v2.0.0/opnsense-25.1-lab-configured.box"
+    fw.vm.box = "snl-opensense/snl-opensense-configured"    
+    fw.vm.box_url = "https://github.com/JohanV711/TSI-TFG/releases/download/v2.0.0/opnsense-25.1-lab-configured.box"
     fw.vm.network "forwarded_port",
       guest: 22, host: 2200,
       host_ip: "127.0.0.1",

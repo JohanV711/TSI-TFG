@@ -22,6 +22,14 @@ Laboratorio práctico de ciberseguridad que reproduce una arquitectura de red co
 | Base de datos    | MariaDB 10.6                        |
 | Atacante         | Kali Linux (external‑kali + noVNC) |
 
+## ¿Qué contiene el bloque 3?
+- configs: contiene
+- docs:
+- images: 
+- scripts:
+- Vagrantfile: 
+
+
 ## Índice
 
 1. [Introducción y contexto](docs/01-introduccion-contexto.md)
