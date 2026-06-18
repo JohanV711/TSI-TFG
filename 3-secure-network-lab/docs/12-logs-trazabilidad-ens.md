@@ -144,7 +144,7 @@ Label: DNS hacia OPNsense.
 **Interpretación:** La consulta DNS dirigida a `8.8.8.8` es interceptada por la regla de Port Forward. OPNsense reescribe el destino a `10.10.1.1:53` (Unbound) antes de procesarla. El cliente recibe la respuesta como si viniera de `8.8.8.8`, sin poder detectar la redirección. Unbound aplica los Host Overrides y bloquea `instagram.com` devolviendo `0.0.0.0`.
 
 
-![Ejemplos de logs en el Live View de OPNsense](images/image10.png)
+![Ejemplos de logs en el Live View de OPNsense](images/image9.png)
 
 *Figura 11: Live View de OPNsense mostrando varias de las entradas de log descritas en los escenarios A-H. Se observan tanto tráfico bloqueado (`BLOCK`) como permitido (`PASS`) y redirecciones DNS.*
 
@@ -183,9 +183,9 @@ El Esquema Nacional de Seguridad define controles de seguridad agrupados en cate
 
 > **Nota sobre la categoría ENS del sistema:** Este laboratorio simula una infraestructura de categoría **MEDIA** según el ENS, al gestionar datos de empleados y servicios corporativos. Los controles implementados cubren los requisitos mínimos de esa categoría. Una categoría **ALTA** requeriría controles adicionales como autenticación multifactor, auditorías periódicas, continuidad de negocio y cifrado de datos en reposo.
 
-![Tabla de reglas con logging habilitado](images/image11.png)
+![Tabla de reglas con logging habilitado](images/image10.png)
 
-*Figura 12: Listado de reglas de una interfaz en OPNsense. Se observa el icono de logging activado en las reglas de bloqueo, garantizando que todos los intentos no autorizados queden registrados.*
+*Figura 12: Listado de reglas de ejemplo de la interfaz wgadmins en OPNsense. Se observa el icono de logging activado (la i en color azul que aparece debajo del triángulo verde) en todas las reglas, garantizando que todos los intentos no autorizados queden registrados.*
 
 <br>
 <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">

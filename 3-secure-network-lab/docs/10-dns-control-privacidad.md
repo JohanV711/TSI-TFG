@@ -89,7 +89,7 @@ Interface: wgadmins
 Source:    10.10.1.51:XXXXX
 Dest:      10.10.1.1:53
 Proto:     UDP
-Rule:      DNS hacia Opensense
+Label:     VPN-ADMINS: permitir salida a internet en full-tunnel.
 ```
 
 Esto confirma que el paquete fue capturado y redirigido antes de salir por la WAN. 
@@ -203,14 +203,14 @@ Interface: WAN para internet real
 Source:    10.0.2.15:XXXXX
 Dest:      1.1.1.1:853
 Proto:     TCP
-Rule:      let out anything from firewall host itself
+Label:      let out anything from firewall host itself
 ```
 
 Se observa TCP al puerto 853, es decir, DoT, en lugar de UDP al puerto 53, DNS en claro. Las consultas van cifradas mediante TLS 1.3. 
 
 ![Live View de OPNsense](images/image8.png)
 
-*Figura 9: Live View de OPNsense. Se observan las consultas DNS salientes de Unbound hacia 1.1.1.1:853 usando TCP cifrado.*
+*Figura 9: Live View de OPNsense. Se observan las consultas DNS salientes de Unbound hacia 1.1.1.1:853 o 9.9.9.9:853 usando TCP cifrado.*
 
 **Cadena completa de resolución DNS en este laboratorio:**
 

@@ -3,7 +3,7 @@
 ### 2.1 Diagrama de red
 
 ![Diagrama de red](images/diagramadered.png)  
-*Figura 1: Topología del laboratorio. Las líneas representan enlaces de red entre las máquinas virtuales. Las nubes indican las redes internas de VirtualBox utilizadas para la segmentación.*
+*Figura 1: Topología del laboratorio.*
 
 ---
 
