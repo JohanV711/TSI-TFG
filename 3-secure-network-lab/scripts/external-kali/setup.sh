@@ -14,7 +14,7 @@ apt-get install -y -qq \
   wireguard-tools \
   nmap \
   tcpdump \
-  netcat-traditional \
+  mariadb-client \
   curl \
   wget \
   iputils-ping \
