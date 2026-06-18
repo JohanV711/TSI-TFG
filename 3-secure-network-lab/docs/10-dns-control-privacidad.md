@@ -94,7 +94,7 @@ Label:     VPN-ADMINS: permitir salida a internet en full-tunnel.
 
 Esto confirma que el paquete fue capturado y redirigido antes de salir por la WAN. 
 
-![Live View de OPNsense](images/image6.png)
+![Live View de OPNsense](../images/image6.png)
 
 *Figura 7: Live View de OPNsense. Se observa cómo una consulta DNS dirigida a 8.8.8.8 es interceptada y redirigida a Unbound.*
 
@@ -125,7 +125,7 @@ Unbound permite responder con una IP específica para cualquier dominio, indepen
 
 El comodín `*` en el campo Host cubre cualquier subdominio (`www.instagram.com`, `static.instagram.com`, etc.). 
 
-![Listado de Host Overrides en Unbound DNS](images/image7.png)
+![Listado de Host Overrides en Unbound DNS](../images/image7.png)
 
 *Figura 8: Listado de Host Overrides en Unbound DNS. Se muestran los dominios bloqueados con la respuesta forzada a 0.0.0.0.*
 
@@ -208,7 +208,7 @@ Label:      let out anything from firewall host itself
 
 Se observa TCP al puerto 853, es decir, DoT, en lugar de UDP al puerto 53, DNS en claro. Las consultas van cifradas mediante TLS 1.3. 
 
-![Live View de OPNsense](images/image8.png)
+![Live View de OPNsense](../images/image8.png)
 
 *Figura 9: Live View de OPNsense. Se observan las consultas DNS salientes de Unbound hacia 1.1.1.1:853 o 9.9.9.9:853 usando TCP cifrado.*
 

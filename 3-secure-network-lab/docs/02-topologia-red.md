@@ -2,7 +2,7 @@
 
 ### 2.1 Diagrama de red
 
-![Diagrama de red](images/diagramadered.png)  
+![Diagrama de red](../images/diagramadered.png)  
 *Figura 1: Topología del laboratorio.*
 
 ---

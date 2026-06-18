@@ -27,7 +27,7 @@ El Live View de OPNsense es la herramienta principal para verificar en tiempo re
 - `Interface = WAN` → solo tráfico entrante desde la red externa.
 - `Destination = 172.16.0.10` → solo tráfico dirigido al servidor DMZ.
 
-![Live View del firewall mostrando tráfico bloqueado desde WAN](images/image1.png)
+![Live View del firewall mostrando tráfico bloqueado desde WAN](../images/image1.png)
 
 *Figura 2: Live View de OPNsense. Se observan paquetes bloqueados desde la IP 91.168.50.10 (external-kali) hacia recursos internos. La columna Label indica qué regla ha denegado el tráfico.*
 
@@ -77,7 +77,7 @@ curl http://172.16.0.10
 
 En el Live View, filtrando por Source = 10.10.2.51, aparecen entradas con Action = pass correspondientes a la regla que autoriza tráfico desde wg-users hacia la DMZ en el puerto 80. Los ejemplos concretos de logs para cada escenario se detallan en la sección 12.2
 
-![Listado de reglas de la interfaz DMZ en OPNsense](images/image3.png)
+![Listado de reglas de la interfaz DMZ en OPNsense](../images/image3.png)
 
 *Figura 4: Listado de reglas de la interfaz DMZ en OPNsense. Las reglas de bloqueo tienen el icono de logging activado, lo que garantiza que cualquier intento no autorizado quede registrado.*
 
@@ -101,7 +101,7 @@ ip route show default
 # Debe devolver: default via 192.168.20.1 dev enp0s8
 ```
 
-![Salida del comando ip route show en dmz-server](images/image4.png)
+![Salida del comando ip route show en dmz-server](../images/image4.png)
 
 *Figura 5: Salida del comando `ip route show` en dmz-server. Se observa que la ruta por defecto apunta a `172.16.0.1` (OPNsense) y no a la red NAT de VirtualBox.*
 

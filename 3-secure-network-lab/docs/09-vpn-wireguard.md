@@ -39,7 +39,7 @@ peer: tlzDt6npntn7E2TX7MajuUHkNkIAAy8/LoVp/kYJzBo=
 - Si el handshake se produce pero `transfer` se mantiene en cero, es posible que el tráfico no esté usando el túnel. Con `AllowedIPs = 0.0.0.0/0`, `wg-quick` añade automáticamente las reglas de enrutamiento necesarias; verificar con `ip rule show`.
 - Se recomienda capturar esta salida como evidencia de túnel operativo.
 
-![Salida de `sudo wg show wg-admins`](images/image5.png)
+![Salida de `sudo wg show wg-admins`](../images/image5.png)
 
 *Figura 6: Salida de `wg show wg-admins`. Se observa el handshake reciente, la clave pública del peer y los bytes transferidos, confirmando que el túnel está activo y cursando tráfico.*
 
