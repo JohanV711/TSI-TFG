@@ -2,6 +2,7 @@
 #Para introducir datos a los servicios de la MV.
 set -euo pipefail
 
+mkdir -p /srv/samba/confidential
 mysql -u root << 'SQL'
 CREATE DATABASE IF NOT EXISTS corporativedb;
 USE corporativedb;

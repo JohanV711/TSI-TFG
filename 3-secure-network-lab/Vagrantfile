@@ -68,7 +68,7 @@ Vagrant.configure("2") do |config|
       virtualbox__intnet:  "net-wan",
       nic_type:            "82540EM"
 
-    #para navegador con interfaz gráfica, dentro del host escuchará en 6080.
+    #para navegador con interfaz gráfica.
     kali.vm.network "forwarded_port", guest: 8081, host: 8081
 
     kali.vm.provider "virtualbox" do |vb|

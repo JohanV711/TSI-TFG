@@ -14,13 +14,18 @@ echo "[gui] Instalando escritorio XFCE y herramientas VNC..."
 
 apt-get update -qq
 apt-get install -y -qq \
-    xfce4 \
-    xfce4-goodies \
-    lightdm \
-    x11-xserver-utils \
-    x11vnc \
-    novnc \
-    websockify
+  netdiscover \
+  hydra \
+  tcpdump \
+  wireshark-common \
+  dsniff \
+  nmap \
+  ettercap-text-only \
+  telnet \
+  ftp \
+  default-mysql-client \
+  enum4linux \
+  smbclient
 
 # Auto-login del usuario vagrant en XFCE
 mkdir -p /etc/lightdm/lightdm.conf.d

@@ -53,12 +53,14 @@ systemctl restart mysql
 sleep 5
 
 # MySQL: permitir conexiones remotas sin contraseña SIN ELIMINAR el acceso local
+set +e
 mysql -u root << 'SQL'
 ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '';
 CREATE USER IF NOT EXISTS 'root'@'%' IDENTIFIED WITH mysql_native_password BY '';
 GRANT ALL PRIVILEGES ON *.* TO 'root'@'%' WITH GRANT OPTION;
 FLUSH PRIVILEGES;
 SQL
+set -e
 echo "MySQL root configurado sin contraseña (local + remoto)."
 
 #SAMBA.
