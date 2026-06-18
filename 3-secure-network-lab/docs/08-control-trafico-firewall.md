@@ -30,7 +30,7 @@ El Live View de OPNsense es la herramienta principal para verificar en tiempo re
 
 ![Live View del firewall mostrando tráfico bloqueado desde WAN](images/image1.png)
 
-*Figura 2: Live View de OPNsense. Se observan paquetes bloqueados desde la IP 91.168.50.10 (external-kali) hacia recursos internos. La columna Rule indica qué regla ha denegado el tráfico.*
+*Figura 2: Live View de OPNsense. Se observan paquetes bloqueados desde la IP 91.168.50.10 (external-kali) hacia recursos internos. La columna Label indica qué regla ha denegado el tráfico.*
 
 ---
 
@@ -53,7 +53,7 @@ nmap -sS -p 22,80,443 91.168.50.1
 - La interfaz de entrada es `WAN`.
 - La IP de origen es `91.168.50.10`.
 - Los destinos son `172.16.0.10:80`, `192.168.20.10` (ICMP), `91.168.50.1:22,80,443`.
-- La regla que bloquea suele ser la regla por defecto (`Default deny / block rule`) o una regla específica de bloqueo si se ha configurado con logging.
+- La regla que bloquea suele ser la regla por defecto (`Default deny / block rule`) o alguna de las reglas que hemos añadido a las interfaces para bloquear explícitamente tráfico.
 
 ![Detalle del Live View filtrado por Action=block](images/image2.png)
 
@@ -77,7 +77,7 @@ curl http://172.16.0.10
 
 **En Live View (filtrar por Interface = VPN o por Source = 10.10.2.51):**
 
-- Aparecen entradas con `Action = pass`.
+- Aparecen entradas con `Action = pass`(o color verde).
 - La regla que las permite es la que autoriza tráfico desde `wg-users` hacia la DMZ en el puerto 80.
 
 **Registro por interfaz:**
@@ -111,19 +111,8 @@ ip route show default
 # Debe devolver: default via 192.168.20.1 dev enp0s8
 ```
 
-**Prueba 2: Traceroute hacia internet**
 
-```bash
-# Desde dmz-server
-traceroute -n 8.8.8.8
-# El primer salto debe ser 172.16.0.1
-
-# Desde vlan20-server
-traceroute -n 8.8.8.8
-# El primer salto debe ser 192.168.20.1
-```
-
-**Prueba 3: Ausencia de tráfico directo por NAT de Vagrant**
+**Prueba 2: Ausencia de tráfico directo por NAT de Vagrant**
 
 ```bash
 # En el Live View de OPNsense, filtrar por:
@@ -132,7 +121,6 @@ traceroute -n 8.8.8.8
 
 **Resultado esperado:** No debe aparecer tráfico con origen en IPs de la NAT de Vagrant porque las rutas hacia `10.0.2.2` fueron eliminadas durante el provisionamiento.
 
-Si apareciera tráfico con esas IPs, indicaría que alguna MV aún conserva la ruta por defecto de Vagrant, lo cual debe corregirse.
 
 ![Salida del comando ip route show en dmz-server](images/image4.png)
 
@@ -140,6 +128,9 @@ Si apareciera tráfico con esas IPs, indicaría que alguna MV aún conserva la r
 
 **Conclusión:** Todo el tráfico de las máquinas internas hacia el exterior está forzado a pasar por OPNsense. Esto garantiza que las políticas de filtrado, el DNS forzado y la monitorización del IDS se apliquen sin posibilidad de bypass.
 
----
-
-[📑 Volver al índice general](../README.md)  |  [← Anterior](07-pruebas-funcionales.md)  |  [Siguiente →](09-vpn-wireguard.md)
+<br>
+<div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+  <span><a href="07-pruebas-funcionales.md">← Anterior</a></span>
+  <span><a href="../README.md">Volver al índice</a></span>
+  <span><a href="09-vpn-wireguard.md">Siguiente →</a></span>
+</div>

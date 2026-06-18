@@ -56,7 +56,7 @@ WireGuard encapsula todo el tráfico dentro de paquetes UDP cifrados con **ChaCh
 sudo wg-quick up wg-admins
 curl http://172.16.0.10
 
-# Terminal 2 (simultáneamente): capturar en la interfaz que da a la WAN (eth1)
+# Terminal 2 (simultáneamente dentro de external-kali pero en otra terminal): capturar en la interfaz que da a la WAN (eth1)
 sudo tcpdump -i eth1 -n udp port 51820
 ```
 
@@ -64,8 +64,8 @@ sudo tcpdump -i eth1 -n udp port 51820
 
 ```text
 listening on eth1, link-type EN10MB (Ethernet), capture size 262144 bytes
-11:22:33.456789 IP 91.168.50.10.54321 > 91.168.50.1.51820: UDP, length 1420
-11:22:33.457012 IP 91.168.50.1.51820 > 91.168.50.10.54321: UDP, length 1420
+11:22:33.456789 IP 91.168.50.10.54321 > 91.168.50.1.51820: UDP, length 96
+11:22:33.457012 IP 91.168.50.1.51820 > 91.168.50.10.54321: UDP, length 96
 ...
 ```
 
@@ -88,16 +88,16 @@ Mientras se ejecuta `curl http://172.16.0.10`, se observan paquetes TCP hacia `1
 
 Los dos perfiles de VPN no solo usan claves diferentes, sino que OPNsense les asigna políticas de firewall completamente distintas. La tabla siguiente resume las diferencias verificadas durante las pruebas:
 
-| Acceso | `wg-admins` | `wg-users` |
-|---|---:|---:|
-| Portal web DMZ (`172.16.0.10:80`) | ✔ | ✔ |
-| SSH a `dmz-server` (`172.16.0.10:22`) | ✔ | ✘ |
-| SSH a `vlan20-server` (`192.168.20.10:22`) | ✔ | ✘ |
-| MySQL desde el cliente VPN a `vlan20-server` (`3306`) | ✔ (firewall) | ✘ (firewall) |
-| WebUI OPNsense (`https://192.168.10.1/`) | ✔ | ✘ |
-| Salida a Internet | ✔ | ✔ |
-| DNS forzado por OPNsense | ✔ | ✔ |
-| Bloqueo de dominios (Instagram, Facebook) | ✔ | ✔ |
+| Acceso | `wg-admins` | `wg-users` | Notas |
+|--------|:-----------:|:----------:|-------|
+| Portal web DMZ (`172.16.0.10:80`) | ✔ | ✔ | |
+| SSH a `dmz-server` (`172.16.0.10:22`) | ✔ (firewall) | ✘ | Requiere clave SSH privada (no contraseña). |
+| SSH a `vlan20-server` (`192.168.20.10:22`) | ✔ (firewall) | ✘ | Similar al anterior. |
+| MySQL desde el cliente VPN a `vlan20-server` (`3306`) | ✔ (firewall) / ✘ (MariaDB) | ✘ (firewall) | MariaDB rechaza autenticación desde IP no autorizada (error 1130). |
+| WebUI OPNsense (`https://192.168.10.1`) | ✔ | ✘ | |
+| Salida a Internet | ✔ | ✔ | |
+| DNS forzado por OPNsense | ✔ | ✔ | |
+| Bloqueo de dominios (Instagram, Facebook) | ✔ | ✔ | |
 
 
 **Explicación técnica:**
@@ -110,11 +110,11 @@ Los dos perfiles de VPN no solo usan claves diferentes, sino que OPNsense les as
 
 ### 9.4 Comportamiento del full-tunnel con `AllowedIPs = 0.0.0.0/0`
 
-Ambos perfiles de WireGuard utilizan `AllowedIPs = 0.0.0.0/0` en el lado del cliente, lo que instruye a `wg-quick` a redirigir todo el tráfico del sistema a través del túnel. Esta configuración se conoce como túnel completo (full-tunnel). 
+Ambos perfiles de WireGuard utilizan `AllowedIPs = 0.0.0.0/0` en el lado del cliente, lo que instruye a `wg-quick` a redirigir todo el tráfico del sistema a través del túnel. Esta configuración se conoce como túnel completo (full-tunnel).
 
 **Cómo funciona técnicamente:**
 
-`wg-quick` no modifica la tabla de enrutamiento principal del sistema. En su lugar, crea una tabla de enrutamiento separada y añade reglas de política de enrutamiento (`ip rule`) para dirigir el tráfico hacia ella. La verificación correcta se realiza con:
+`wg-quick` no modifica la tabla de enrutamiento principal del sistema. En su lugar, crea una tabla de enrutamiento separada y añade reglas de política de enrutamiento (policy routing) para dirigir el tráfico hacia ella. La verificación correcta se realiza con:
 
 ```bash
 ip rule show
@@ -128,26 +128,36 @@ ip rule show
 32765:  not from all fwmark 0xca6c lookup 51820
 ```
 
-- `32764`: busca en la tabla `main`, pero suprime las rutas con prefijo 0, es decir, la ruta por defecto. De esta forma, las rutas específicas, como la de la red local, se siguen usando desde la tabla principal.
-- `32765`: todo el tráfico que no tenga la marca de firewall `0xca6c` se enruta usando la tabla `51820`. Esa tabla contiene la ruta `0.0.0.0/0` que envía todo hacia la interfaz virtual `wg-admins`. 
+- **Regla 32764:** busca en la tabla `main`, pero suprime las rutas con prefijo 0 (la ruta por defecto). De esta forma, las rutas específicas (como la de la red local) se siguen usando desde la tabla principal.
+- **Regla 32765:** todo el tráfico que **no** tenga la marca de firewall `0xca6c` (el tráfico que no viene del propio túnel) se enruta usando la tabla `51820`. Esta tabla contiene la ruta `0.0.0.0/0` que envía todo hacia la interfaz virtual `wg-admins`.
 
-**Efectos inmediatos al activar la VPN:**
+---
 
-- **Salida a internet por OPNsense:** todo el tráfico se encapsula y se envía al endpoint de WireGuard (`91.168.50.1`). OPNsense lo desencapsula y lo enruta hacia Internet aplicando sus políticas de firewall y DNS forzado. 
-- **Desconexión de la VPN devuelve el enrutamiento original:** al ejecutar `sudo wg-quick down`, las reglas de política de enrutamiento y la tabla `51820` se eliminan, restaurando la conectividad directa a Internet a través de la interfaz NAT de Vagrant (`eth0`). 
-
-**Verificación práctica del túnel completo:**
+**Verificación adicional sin VPN:**
 
 ```bash
-# Con VPN activa
-curl -s ifconfig.me
-# Debe devolver la IP pública de la WAN de OPNsense
+# Desactivar cualquier VPN
+sudo wg-quick down wg-admins 2>/dev/null
+sudo wg-quick down wg-users 2>/dev/null
 
-# Con VPN desactivada
-sudo wg-quick down wg-admins  # o wg-users
-curl -s ifconfig.me
-# Debe devolver la IP de la NAT de Vagrant (diferente a la de OPNsense)
+# Verificar la ruta por defecto
+ip route show default
+# Debe mostrar: default via 10.0.2.2 dev eth0
 ```
+
+---
+
+**Efectos del túnel completo:**
+
+- **Con VPN activa:** todo el tráfico de `external-kali` (web, DNS, etc.) se encapsula y se envía a OPNsense, que aplica sus políticas antes de enviarlo a Internet.
+- **Con VPN desactivada:** `external-kali` sale directamente a Internet por su propia NAT (`eth0`), sin pasar por OPNsense. Las políticas de filtrado, DNS forzado y Suricata no se aplican.
+
+---
+
+**Evidencia complementaria de que el túnel está cursando el tráfico:**
+
+- **Bloqueo DNS solo con VPN:** `nslookup instagram.com 8.8.8.8` devuelve `0.0.0.0` con la VPN activa (porque OPNsense fuerza Unbound) y la IP real de Instagram con la VPN desactivada.
+- **`sudo wg show`:** muestra `transfer` con bytes recibidos y enviados > 0, confirmando que el túnel transporta datos.
 
 **Implicaciones de seguridad:**
 
@@ -155,6 +165,9 @@ curl -s ifconfig.me
 - Para el laboratorio, permite verificar fácilmente que el DNS forzado, el filtrado de dominios y Suricata se aplican al tráfico del cliente VPN, lo que se comprueba en las secciones 10 y 11.
 - Precaución en producción: esta configuración enruta todo el tráfico del cliente hacia la organización, lo que puede generar problemas de rendimiento y consumo de ancho de banda si no se dimensiona adecuadamente. Suele combinarse con una política de split-tunneling para tráfico no sensible, pero aquí se ha empleado full-tunnel por simplicidad y para maximizar el control durante las prácticas.
 
----
-
-[📑 Volver al índice general](../README.md)  |  [← Anterior](08-control-trafico-firewall.md)  |  [Siguiente →](10-dns-control-privacidad.md)
+<br>
+<div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+  <span><a href="08-control-trafico-firewall.md">← Anterior</a></span>
+  <span><a href="../README.md">Volver al índice</a></span>
+  <span><a href="10-dns-control-privacidad.md">Siguiente →</a></span>
+</div>

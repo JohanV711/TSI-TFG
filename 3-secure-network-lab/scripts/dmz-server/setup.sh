@@ -18,7 +18,7 @@ echo "[*] Actualizando repositorios..."
 apt-get update -qq
 
 echo "[*] Instalando Nginx y Python3..."
-apt-get install -y nginx python3 python3-pip mariadb-client 2>/dev/null
+apt-get install -y nginx python3 python3-pip mariadb-client 2>/dev/null traceroute
 pip3 install flask mysql-connector-python --quiet 2>/dev/null || true
 
 # PASO 2 — Rutas persistentes via rc.local

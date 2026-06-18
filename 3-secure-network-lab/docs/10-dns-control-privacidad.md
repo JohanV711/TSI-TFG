@@ -11,9 +11,9 @@ Por defecto, un cliente puede configurar manualmente cualquier servidor DNS exte
 **Unbound DNS** es el servidor DNS resolver que viene predeterminado en OPNsense y actúa como un resolvedor, validador y caché. A diferencia de los servicios de reenvío tradicionales, Unbound es un **resolvedor recursivo**, lo que significa que, en lugar de preguntar directamente a los DNS del proveedor de internet (ISP), se comunica directamente con los **servidores raíz** de internet para encontrar las direcciones IP por sí mismo.
 
 Las ventajas principales de usar Unbound DNS incluyen:
-- **Privacidad mejorada**: Evitas que el proveedor de internet registre todas las páginas web que se visiten.
-- **Caché local**: Almacena en memoria las direcciones que ya has visitado para acelerar la navegación de otros equipos en la red.
-- **Control local**: Permite configurar bloqueos por dominio (como bloquear anuncios, malware o redes sociales) directamente en el firewall.
+- **Privacidad mejorada**: se evita que el proveedor de internet registre todas las páginas web que se visiten.
+- **Caché local**: almacena en memoria las direcciones que ya has visitado para acelerar la navegación de otros equipos en la red.
+- **Control local**: permite configurar bloqueos por dominio (como bloquear anuncios, malware o redes sociales) directamente en el firewall.
 
 **Mecanismo:** Se implementa mediante reglas de NAT de destino (Port Forward) en cada interfaz interna. Cuando un cliente envía una consulta UDP o TCP al puerto 53 hacia cualquier IP que no sea OPNsense, el firewall reescribe el destino y la entrega a Unbound. 
 
@@ -235,6 +235,9 @@ Respuesta cifrada → Unbound la descifra → responde al cliente
 
 **Nota sobre Forward Mode:** Para que DoT funcione, Unbound debe estar configurado en modo forwarding (`Enable Forwarding Mode` en `Services → Unbound DNS → General`). Sin esta opción, Unbound resolvería directamente contra los servidores raíz por UDP/53 y las entradas DoT serían ignoradas.
 
----
-
-[📑 Volver al índice general](../README.md)  |  [← Anterior](09-vpn-wireguard.md)  |  [Siguiente →](11-suricata-deteccion.md)
+<br>
+<div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+  <span><a href="09-vpn-wireguard.md">← Anterior</a></span>
+  <span><a href="../README.md">Volver al índice</a></span>
+  <span><a href="11-suricata-deteccion.md">Siguiente →</a></span>
+</div>

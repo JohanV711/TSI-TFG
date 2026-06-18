@@ -50,12 +50,14 @@ Sin embargo, para las pruebas de seguridad y verificación de políticas de acce
 
 ### 6.3 Configuración de los túneles VPN WireGuard
 
+**Importante:** No se deben activar simultáneamente `wg-admins` y `wg-users`. Ambos fuerzan el tráfico por el túnel correspondiente y entran en conflicto. Antes de cambiar de perfil hay que desactivar el actual.
+
 Las configuraciones de WireGuard en `external-kali` se generan automáticamente durante el provisionamiento y se almacenan en:
 
 - `/etc/wireguard/wg-admins.conf` — perfil de administrador.
 - `/etc/wireguard/wg-users.conf` — perfil de usuario.
 
-**Activar un túnel:**
+**Activar la VPN(túnel):**
 
 ```bash
 # Activar VPN de administradores
@@ -65,14 +67,14 @@ sudo wg-quick up wg-admins
 sudo wg-quick up wg-users
 ```
 
-**Desactivar un túnel:**
+**Desactivar la VPN:**
 
 ```bash
 sudo wg-quick down wg-admins
 sudo wg-quick down wg-users
 ```
 
-**Verificar el estado de un túnel activo:**
+**Verificar el estado de la VPN activa:**
 
 ```bash
 sudo wg show wg-admins
@@ -118,6 +120,9 @@ Resultado: sin respuesta o timeout.
 El portal muestra una página principal con información corporativa simulada y un enlace al listado de empleados. La aplicación Flask que genera el contenido se ejecuta en localhost (`127.0.0.1:5000`) y Nginx actúa como proxy inverso hacia ella. Este diseño evita exponer directamente el servicio de la aplicación al resto de la red.
 Todas estas pruebas se pueden realizar desde el escritorio virtual a través de noVNC también para que sea más intuitivo y visual (usando el navegador por ejemplo).
 
----
-
-[📑 Volver al índice general](../README.md)  |  [← Anterior](05-diferencias-entorno-real.md)  |  [Siguiente →](07-pruebas-funcionales.md)
+<br>
+<div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+  <span><a href="05-diferencias-entorno-real.md">← Anterior</a></span>
+  <span><a href="../README.md">Volver al índice</a></span>
+  <span><a href="07-pruebas-funcionales.md">Siguiente →</a></span>
+</div>

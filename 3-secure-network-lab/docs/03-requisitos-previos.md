@@ -70,6 +70,9 @@ El Vagrantfile crea cuatro redes internas que no son accesibles desde el anfitri
 - `net-lan`
 
 
----
-
-[📑 Volver al índice general](../README.md)  |  [← Anterior](02-topologia-red.md)  |  [Siguiente →](04-despliegue-lab.md)
+<br>
+<div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+  <span><a href="02-topologia-red.md">← Anterior</a></span>
+  <span><a href="../README.md">Volver al índice</a></span>
+  <span><a href="04-despliegue-lab.md">Siguiente →</a></span>
+</div>

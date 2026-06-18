@@ -49,6 +49,9 @@ El diseño presentado es extrapolable a múltiples escenarios empresariales real
 
 Esta arquitectura, aunque desplegada en un solo host gracias a la virtualización, es perfectamente escalable a hardware dedicado mediante switches gestionables (VLANs 802.1Q) y múltiples servidores físicos.
 
----
-
-[📑 Volver al índice general](../README.md)  |  [Siguiente →](02-topologia-red.md)
+<br>
+<div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+  <span></span>
+  <span><a href="../README.md">Volver al índice</a></span>
+  <span><a href="02-topologia-red.md">Siguiente →</a></span>
+</div>

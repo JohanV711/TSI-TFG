@@ -222,6 +222,9 @@ El Esquema Nacional de Seguridad define controles de seguridad agrupados en cate
 
 *Figura 12: Listado de reglas de una interfaz en OPNsense. Se observa el icono de logging activado en las reglas de bloqueo, garantizando que todos los intentos no autorizados queden registrados.*
 
----
-
-[📑 Volver al índice general](../README.md)  |  [← Anterior](11-suricata-deteccion.md)  |  [Siguiente →](13-conclusiones.md)
+<br>
+<div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+  <span><a href="11-suricata-deteccion.md">← Anterior</a></span>
+  <span><a href="../README.md">Volver al índice</a></span>
+  <span><a href="13-conclusiones.md">Siguiente →</a></span>
+</div>

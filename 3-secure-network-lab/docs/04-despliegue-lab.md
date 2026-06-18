@@ -96,7 +96,7 @@ exit
 
 Abrir en el navegador del anfitrión: [http://localhost:8081/vnc.html](http://localhost:8081/vnc.html)
 
-La contraseña VNC por defecto es `vagrant`. Debe aparecer el escritorio XFCE de Kali Linux. Este acceso gráfico confirma que `external-kali` está completamente operativa.
+La contraseña VNC por defecto es `vagrant`. Debe aparecer el escritorio XFCE de Kali Linux. Este acceso gráfico confirma que `external-kali` está completamente operativa. También la contraseña de kali-linux para entrar en el entorno virtual es `vagrant`. 
 
 **Paso 4: Interfaces de red esperadas**
 
@@ -109,6 +109,9 @@ ip a | grep -E "eth0|eth1"
 - `eth0`: NAT propia (`10.0.2.15`).
 - `eth1`: red WAN del lab (`91.168.50.10`).
 
----
-
-[📑 Volver al índice general](../README.md)  |  [← Anterior](03-requisitos-previos.md)  |  [Siguiente →](05-diferencias-entorno-real.md)
+<br>
+<div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+  <span><a href="03-requisitos-previos.md">← Anterior</a></span>
+  <span><a href="../README.md">Volver al índice</a></span>
+  <span><a href="05-diferencias-entorno-real.md">Siguiente →</a></span>
+</div>

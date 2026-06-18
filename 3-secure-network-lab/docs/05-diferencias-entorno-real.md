@@ -31,6 +31,9 @@ Los recursos asignados a cada máquina virtual son ajustados para funcionar en u
 
 Estas limitaciones no afectan a los objetivos didácticos del laboratorio, pero deben tenerse en cuenta antes de extrapolar directamente cualquier métrica de rendimiento o seguridad a un entorno corporativo real.
 
----
-
-[📑 Volver al índice general](../README.md)  |  [← Anterior](04-despliegue-lab.md)  |  [Siguiente →](06-acceso-servicios.md)
+<br>
+<div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+  <span><a href="04-despliegue-lab.md">← Anterior</a></span>
+  <span><a href="../README.md">Volver al índice</a></span>
+  <span><a href="06-acceso-servicios.md">Siguiente →</a></span>
+</div>
