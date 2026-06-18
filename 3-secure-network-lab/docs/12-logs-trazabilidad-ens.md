@@ -6,17 +6,16 @@ La trazabilidad es uno de los pilares del Esquema Nacional de Seguridad. El cont
 
 ### 12.1 Dónde ver los logs en OPNsense
 
-OPNsense organiza los logs en varias ubicaciones según el subsistema que los genera. La tabla siguiente resume los puntos de acceso principales:
+OPNsense organiza los logs en varias ubicaciones según el subsistema que los genera. La tabla siguiente resume los puntos de acceso **principales**:
 
 | Subsistema | Ruta en la WebUI | Descripción |
 |------------|-----------------|-------------|
 | Firewall (tiempo real) | Firewall → Log Files → Live View | Tráfico permitido y bloqueado en tiempo real con filtros |
 | Firewall (histórico) | Firewall → Log Files → Plain | Entradas de log en texto plano, exportables |
-| Suricata IDS | Services → Intrusion Detection → Alerts | Alertas generadas por firmas de Suricata |
+| Suricata IDS | Services → Intrusion Detection → Administration → Alerts | Alertas de Suricata |
 | WireGuard VPN | VPN → WireGuard → Status | Estado de túneles, handshakes y transferencia |
 | Unbound DNS | Services → Unbound DNS → Log File | Consultas DNS resueltas y bloqueadas |
 | Sistema general | System → Log Files → General | Eventos del sistema operativo y demonios |
-| Autenticación | System → Log Files → Auth | Intentos de acceso a la WebUI de OPNsense |
 
 **Live View del firewall:**
 
@@ -32,20 +31,23 @@ Para que una regla aparezca en los logs, debe tener el icono de log activado (co
 
 Las siguientes entradas son representativas de los eventos que genera cada escenario del laboratorio. Se pueden reproducir ejecutando las pruebas de la sección 7 con el Live View abierto.
 
+> **Nota 1:** Los puertos de origen que aparecen en los logs (campo `Source`) son efímeros y cambian en cada ejecución, es el comportamiento normal del sistema operativo. Los valores mostrados son ejemplos; en las pruebas se verán números distintos.
+
+> **Nota 2:** En el Live View, una misma conexión puede aparecer duplicada. Esto ocurre cuando el tráfico atraviesa más de una interfaz: se registra la regla aplicada en la interfaz de **entrada** (ej. `wgadmins`) y, a menudo, otra entrada con la regla genérica `let out anything from firewall host itself` en la interfaz de **salida**. Para auditar un acceso, basta con fijarse en la interfaz de entrada, que es la que contiene la regla de autorización o bloqueo relevante.
 ---
 
 **Escenario A — Acceso sin VPN bloqueado (WAN)**
 
-Acción en `external-kali`: `curl --connect-timeout 3 http://172.16.0.10` sin VPN activa.
+Acción en `external-kali`: `nmap -p 80,443 91.168.50.1` sin VPN activa.
 
 ```text
-Timestamp: 2026-06-11T10:15:32
-Interface: WAN → [in]
 Action: BLOCK
-Source: 91.168.50.10:54231
-Destination: 172.16.0.10:80
+Interface: WAN
+Time: 2026-06-11T10:15:32
+Source: 91.168.50.10:54231 (puerto variable)
+Destination: 91.168.50.1:80, 443
 Protocol: TCP
-Rule: Default deny / state violation rule
+Label: Default deny / state violation rule
 ```
 
 **Interpretación:** El paquete llega a la interfaz WAN pero no existe ninguna regla que permita tráfico desde la WAN hacia la DMZ en el puerto 80. La política por defecto de OPNsense en WAN es denegar todo lo no explícitamente permitido.
@@ -57,127 +59,90 @@ Rule: Default deny / state violation rule
 Acción en `external-kali`: `sudo wg-quick up wg-admins`.
 
 ```text
-Timestamp: 2026-06-11T10:16:01
-Interface: WAN → [in]
 Action: PASS
-Source: 91.168.50.10:47110
+Interface: WAN
+Time: 2026-06-11T10:16:01
+Source: 91.168.50.10:47110 (puerto variable)
 Destination: 91.168.50.1:51820
 Protocol: UDP
-Rule: WAN-IN: Permitir tráfico UDP entrante al puerto 51820 (WireGuard VPN)
+Label: WAN-IN: Permitir tráfico UDP entrante al puerto 51820 (WireGuard VPN).
 ```
 
-**Interpretación:** El paquete UDP de negociación WireGuard es aceptado porque existe una regla explícita en WAN que permite UDP al puerto 51820. Esta es la única entrada permitida desde la WAN; cualquier otro tráfico es bloqueado.
+**Interpretación:** El paquete UDP de negociación WireGuard es aceptado porque existe una regla explícita en WAN que permite UDP al puerto 51820 (si fuera wg-users sería puerto 51821). Esta es la única entrada permitida desde la WAN; cualquier otro tráfico es bloqueado.
 
 ---
 
-**Escenario C — Acceso al portal web con `wg-users` (DMZ)**
-
-Acción en `external-kali`: `curl http://172.16.0.10` con `wg-users` activo.
-
-```text
-Timestamp: 2026-06-11T10:17:45
-Interface: wgusers → [in]
-Action: PASS
-Source: 10.10.2.51:52341
-Destination: 172.16.0.10:80
-Protocol: TCP
-Rule: VPN-USERS: Acceso a DMZ desde usuarios VPN autenticados
-```
-
-**Interpretación:** El tráfico entra por la interfaz `wgusers` y es permitido por la regla que autoriza a `VPN_USERS` hacia `RED_DMZ`. La IP origen es `10.10.2.51`, la dirección del cliente dentro del túnel VPN.
-
----
-
-**Escenario D — Intento de acceso a VLAN20 bloqueado (`wg-users`)**
+**Escenario C — Intento de acceso a VLAN20 bloqueado (`wg-users`)**
 
 Acción en `external-kali`: `nc -zv 192.168.20.10 3306` con `wg-users` activo.
 
 ```text
-Timestamp: 2026-06-11T10:18:12
-Interface: wgusers → [in]
 Action: BLOCK
-Source: 10.10.2.51:43201
+Interface: wgusers
+Time: 2026-06-11T10:18:12
+Source: 10.10.2.51:43201 (puerto variable)
 Destination: 192.168.20.10:3306
 Protocol: TCP
-Rule: VPN-USERS: BLOQUEAR acceso directo a VLAN20 servidores
+Label: VPN-USERS: BLOQUEAR acceso directo a VLAN20 servidores.
 ```
 
 **Interpretación:** Un usuario VPN estándar intenta acceder directamente a la base de datos. La regla de bloqueo explícita en `wgusers` actúa antes de que el paquete llegue a VLAN20. El acceso queda registrado con la IP del cliente VPN, proporcionando trazabilidad del intento.
 
 ---
 
-**Escenario E — Acceso completo con `wg-admins` (VLAN20)**
+**Escenario D — Acceso completo con `wg-admins` (VLAN20)**
 
 Acción en `external-kali`: `nc -zv 192.168.20.10 3306` con `wg-admins` activo.
 
 ```text
-Timestamp: 2026-06-11T10:19:03
-Interface: wgadmins → [in]
 Action: PASS
-Source: 10.10.1.51:38921
+Time: 2026-06-11T10:19:03
+Interface: wgadmins
+Source: 10.10.1.51:38921 (puerto variable)
 Destination: 192.168.20.10:3306
 Protocol: TCP
-Rule: VPN-ADMINS: Acceso completo a VLAN20 servidores desde administradores VPN
+Label: VPN-ADMINS: Acceso completo a VLAN20 servidores desde administradores VPN.
+Label: let out anything from firewall host itself.
 ```
 
 **Interpretación:** El mismo intento de conexión al puerto 3306, pero desde el perfil de administrador, es permitido. El firewall distingue entre perfiles VPN gracias a los aliases `VPN_ADMINS` y `VPN_USERS`, que contienen las subredes `10.10.1.0/24` y `10.10.2.0/24` respectivamente.
 
 ---
 
-**Escenario F — Intento de DMZ hacia red de gestión (bloqueado)**
+**Escenario E — Intento de DMZ hacia red de gestión (bloqueado)**
 
 Acción desde `dmz-server`: `curl --connect-timeout 3 https://192.168.10.1`.
 
 ```text
-Timestamp: 2026-06-11T10:20:17
-Interface: DMZ → [in]
 Action: BLOCK
-Source: 172.16.0.10:51234
+Interface: DMZ
+Time: 2026-06-11T10:20:17
+Source: 172.16.0.10:51234 (puerto variable)
 Destination: 192.168.10.1:443
 Protocol: TCP
-Rule: DMZ-BLOCK: Bloquear tráfico desde DMZ hacia red de gestión
+Label: DMZ-BLOCK: Bloquear y registrar tráfico desde DMZ hacia red de gestión.
 ```
 
 **Interpretación:** El servidor web de la DMZ intenta acceder a la WebUI de OPNsense. Este bloqueo es crítico para la contención: si un atacante comprometiera el servidor web, no podría pivotar hacia la consola de administración del firewall. El log registra la IP del servidor DMZ, permitiendo detectar este comportamiento anómalo.
 
 ---
 
-**Escenario G — Redirección DNS interceptada (Port Forward)**
+**Escenario F — Redirección DNS interceptada (Port Forward)**
 
-Acción en `external-kali`: `nslookup instagram.com 8.8.8.8` con VPN activa.
+Acción en `external-kali`: `nslookup instagram.com 8.8.8.8` con VPN activa (en este caso vpn admins).
 
 ```text
-Timestamp: 2026-06-11T10:21:05
-Interface: wgadmins → [in]
 Action: PASS (NAT redirect)
-Source: 10.10.1.51:53421
+Interface: wgadmins 
+Time: 2026-06-11T10:21:05
+Source: 10.10.1.51:53421 (puerto variable)
 Destination: 8.8.8.8:53 → redirigido a 10.10.1.1:53
 Protocol: UDP
-Rule: DNS-INTERCEPT: Forzar DNS de admins VPN por Unbound OPNsense
+Label: DNS hacia OPNsense.
 ```
 
 **Interpretación:** La consulta DNS dirigida a `8.8.8.8` es interceptada por la regla de Port Forward. OPNsense reescribe el destino a `10.10.1.1:53` (Unbound) antes de procesarla. El cliente recibe la respuesta como si viniera de `8.8.8.8`, sin poder detectar la redirección. Unbound aplica los Host Overrides y bloquea `instagram.com` devolviendo `0.0.0.0`.
 
----
-
-**Escenario H — Alerta Suricata por escaneo nmap**
-
-Acción en `external-kali`: `sudo nmap -sS -T4 91.168.50.1` sin VPN.
-
-```text
-Timestamp: 2026-06-11T10:22:33
-Interface: WAN
-Action: ALERT (IDS)
-Source: 91.168.50.10:variable
-Destination: 91.168.50.1:variable
-Protocol: TCP
-Suricata SID: 2000346
-Alert: ET SCAN NMAP -sS window 1024
-Category: attempted-recon
-Severity: major
-```
-
-**Interpretación:** Suricata identifica el patrón de paquetes SYN con ventana TCP 1024 característico de nmap en modo `-sS`. La alerta aparece en `Services → Intrusion Detection → Alerts`. En modo IDS no se interrumpe el escaneo, pero el evento queda registrado con la IP del atacante, el tipo de ataque y la severidad.
 
 ![Ejemplos de logs en el Live View de OPNsense](images/image10.png)
 
