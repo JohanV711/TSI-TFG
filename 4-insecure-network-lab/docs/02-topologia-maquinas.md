@@ -67,3 +67,18 @@ Las máquinas no utilizan DHCP en las redes del laboratorio, sino **direccionami
 - **Kali:** rutas hacia `192.168.57.0/24` y `192.168.58.0/24` vía `100.70.9.1`.
 
 Esta configuración de rutas, combinada con la ausencia de filtrado, permite que cualquier máquina pueda alcanzar a cualquier otra directamente, sin restricciones.
+
+<br>
+<table style="width: 100%; border: none;">
+  <tr>
+    <td style="text-align: left; border: none; padding: 0;">
+      <a href="01-introduccion-objetivos.md">← Anterior</a>
+    </td>
+    <td style="text-align: center; border: none; padding: 0;">
+      <a href="../README.md">Volver al índice</a>
+    </td>
+    <td style="text-align: right; border: none; padding: 0;">
+      <a href="03-despliegue-acceso.md">Siguiente →</a>
+    </td>
+  </tr>
+</table>

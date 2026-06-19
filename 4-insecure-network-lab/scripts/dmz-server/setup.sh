@@ -26,7 +26,8 @@ smbclient \
 dsniff \
 netdiscover \
 openssh-server \
-nmap
+nmap \
+net-tools
 
 #Malas prácticas para Apache
 cat > /etc/apache2/conf-available/insecure.conf << 'EOF'
@@ -91,9 +92,15 @@ EOF
 systemctl enable xinetd
 systemctl restart xinetd
 
-#Usuario débil para Telnet y FTP con credenciales por defecto.
-id ftpoperator || useradd -m -s /bin/bash ftpoperator
-echo "ftpoperator:ftpoperator" | chpasswd
+# Usuario débil para Telnet y FTP con credenciales por defecto.
+if ! id ftpoperator &>/dev/null; then
+    useradd -m -s /bin/bash ftpoperator
+    echo "ftpoperator:ftpoperator" | chpasswd
+else
+    echo "ftpoperator ya existe, actualizando contraseña"
+    echo "ftpoperator:ftpoperator" | chpasswd
+fi
+
 #Quitar firewall local
 ufw disable || true
 
@@ -112,6 +119,7 @@ network:
         - to: 100.70.9.0/24
           via: 192.168.57.1
 EOF
+chmod 600 /etc/netplan/*.yaml
 netplan apply
 
 cat > /etc/ssh/sshd_config << 'EOF'

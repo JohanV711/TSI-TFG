@@ -236,8 +236,16 @@ Respuesta cifrada → Unbound la descifra → responde al cliente
 **Nota sobre Forward Mode:** Para que DoT funcione, Unbound debe estar configurado en modo forwarding (`Enable Forwarding Mode` en `Services → Unbound DNS → General`). Sin esta opción, Unbound resolvería directamente contra los servidores raíz por UDP/53 y las entradas DoT serían ignoradas.
 
 <br>
-<div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-  <span><a href="09-vpn-wireguard.md">← Anterior</a></span>
-  <span><a href="../README.md">Volver al índice</a></span>
-  <span><a href="11-suricata-deteccion.md">Siguiente →</a></span>
-</div>
+<table style="width: 100%; border: none;">
+  <tr>
+    <td style="text-align: left; border: none; padding: 0;">
+      <a href="09-vpn-wireguard.md">← Anterior</a>
+    </td>
+    <td style="text-align: center; border: none; padding: 0;">
+      <a href="../README.md">Volver al índice</a>
+    </td>
+    <td style="text-align: right; border: none; padding: 0;">
+      <a href="11-suricata-deteccion.md">Siguiente →</a>
+    </td>
+  </tr>
+</table>

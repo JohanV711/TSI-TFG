@@ -159,8 +159,16 @@ Esta mejora convertiría el laboratorio en un entorno completamente desatendido,
 > El conjunto de mejoras descritas representa una hoja de ruta hacia una implantación de nivel empresarial. Cada una de ellas añade una capa adicional de seguridad, visibilidad o resiliencia, y puede implementarse de forma incremental sobre la base de este laboratorio sin necesidad de rediseñar la arquitectura existente.
 
 <br>
-<div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-  <span><a href="12-logs-trazabilidad-ens.md">← Anterior</a></span>
-  <span><a href="../README.md">Volver al índice</a></span>
-  <span></span>
-</div>
+<table style="width: 100%; border: none;">
+  <tr>
+    <td style="text-align: left; border: none; padding: 0;">
+      <a href="12-logs-trazabilidad-ens.md">← Anterior</a>
+    </td>
+    <td style="text-align: center; border: none; padding: 0;">
+      <a href="../README.md">Volver al índice</a>
+    </td>
+    <td style="text-align: right; border: none; padding: 0;">
+      <span style="color: #999;">Fin de la documentación</span>
+    </td>
+  </tr>
+</table>

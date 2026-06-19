@@ -166,8 +166,16 @@ ip route show default
 - Precaución en producción: esta configuración enruta todo el tráfico del cliente hacia la organización, lo que puede generar problemas de rendimiento y consumo de ancho de banda si no se dimensiona adecuadamente. Suele combinarse con una política de split-tunneling para tráfico no sensible, pero aquí se ha empleado full-tunnel por simplicidad y para maximizar el control durante las prácticas.
 
 <br>
-<div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-  <span><a href="08-control-trafico-firewall.md">← Anterior</a></span>
-  <span><a href="../README.md">Volver al índice</a></span>
-  <span><a href="10-dns-control-privacidad.md">Siguiente →</a></span>
-</div>
+<table style="width: 100%; border: none;">
+  <tr>
+    <td style="text-align: left; border: none; padding: 0;">
+      <a href="08-control-trafico-firewall.md">← Anterior</a>
+    </td>
+    <td style="text-align: center; border: none; padding: 0;">
+      <a href="../README.md">Volver al índice</a>
+    </td>
+    <td style="text-align: right; border: none; padding: 0;">
+      <a href="10-dns-control-privacidad.md">Siguiente →</a>
+    </td>
+  </tr>
+</table>

@@ -110,8 +110,16 @@ ip a | grep -E "eth0|eth1"
 - `eth1`: red WAN del lab (`91.168.50.10`).
 
 <br>
-<div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-  <span><a href="03-requisitos-previos.md">← Anterior</a></span>
-  <span><a href="../README.md">Volver al índice</a></span>
-  <span><a href="05-diferencias-entorno-real.md">Siguiente →</a></span>
-</div>
+<table style="width: 100%; border: none;">
+  <tr>
+    <td style="text-align: left; border: none; padding: 0;">
+      <a href="03-requisitos-previos.md">← Anterior</a>
+    </td>
+    <td style="text-align: center; border: none; padding: 0;">
+      <a href="../README.md">Volver al índice</a>
+    </td>
+    <td style="text-align: right; border: none; padding: 0;">
+      <a href="05-diferencias-entorno-real.md">Siguiente →</a>
+    </td>
+  </tr>
+</table>

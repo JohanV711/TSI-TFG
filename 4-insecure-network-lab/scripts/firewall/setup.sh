@@ -92,6 +92,11 @@ iptables -A FORWARD -i $DMZ_IFACE -o $MGMT_IFACE -j DROP
 iptables -A FORWARD -i $INT_IFACE -o $MGMT_IFACE -j DROP
 
 # Prevenir acceso desde redes internas al propio firewall (solo por sus IPs internas)
+# Se permite ICMP para diagnóstico de conectividad
+iptables -A INPUT -i $EXT_IFACE -p icmp --icmp-type echo-request -j ACCEPT
+iptables -A INPUT -i $DMZ_IFACE -p icmp --icmp-type echo-request -j ACCEPT
+iptables -A INPUT -i $INT_IFACE -p icmp --icmp-type echo-request -j ACCEPT
+
 iptables -A INPUT -i $EXT_IFACE -j DROP
 iptables -A INPUT -i $DMZ_IFACE -j DROP
 iptables -A INPUT -i $INT_IFACE -j DROP

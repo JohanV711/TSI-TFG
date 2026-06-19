@@ -32,8 +32,16 @@ Los recursos asignados a cada máquina virtual son ajustados para funcionar en u
 Estas limitaciones no afectan a los objetivos didácticos del laboratorio, pero deben tenerse en cuenta antes de extrapolar directamente cualquier métrica de rendimiento o seguridad a un entorno corporativo real.
 
 <br>
-<div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-  <span><a href="04-despliegue-lab.md">← Anterior</a></span>
-  <span><a href="../README.md">Volver al índice</a></span>
-  <span><a href="06-acceso-servicios.md">Siguiente →</a></span>
-</div>
+<table style="width: 100%; border: none;">
+  <tr>
+    <td style="text-align: left; border: none; padding: 0;">
+      <a href="04-despliegue-lab.md">← Anterior</a>
+    </td>
+    <td style="text-align: center; border: none; padding: 0;">
+      <a href="../README.md">Volver al índice</a>
+    </td>
+    <td style="text-align: right; border: none; padding: 0;">
+      <a href="06-acceso-servicios.md">Siguiente →</a>
+    </td>
+  </tr>
+</table>

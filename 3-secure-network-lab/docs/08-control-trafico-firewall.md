@@ -108,8 +108,16 @@ ip route show default
 **Conclusión:** Todo el tráfico de las máquinas internas hacia el exterior está forzado a pasar por OPNsense. Esto garantiza que las políticas de filtrado, el DNS forzado y la monitorización del IDS se apliquen sin posibilidad de bypass.
 
 <br>
-<div style="display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 20px;">
-  <span><a href="07-pruebas-funcionales.md">← Anterior</a></span>
-  <span><a href="../README.md">Volver al índice</a></span>
-  <span><a href="09-vpn-wireguard.md">Siguiente →</a></span>
-</div>
+<table style="width: 100%; border: none;">
+  <tr>
+    <td style="text-align: left; border: none; padding: 0;">
+      <a href="07-pruebas-funcionales.md">← Anterior</a>
+    </td>
+    <td style="text-align: center; border: none; padding: 0;">
+      <a href="../README.md">Volver al índice</a>
+    </td>
+    <td style="text-align: right; border: none; padding: 0;">
+      <a href="09-vpn-wireguard.md">Siguiente →</a>
+    </td>
+  </tr>
+</table>

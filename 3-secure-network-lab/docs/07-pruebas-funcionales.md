@@ -419,8 +419,16 @@ curl -s ifconfig.me && echo
 **Explicación:** `external-kali` conserva su interfaz NAT (`eth0`) como ruta por defecto gracias a `never-default` en `eth1`. Esto le permite salir directamente a internet sin pasar por OPNsense, simulando un atacante externo real con su propia conectividad.
 
 <br>
-<div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-  <span><a href="06-acceso-servicios.md">← Anterior</a></span>
-  <span><a href="../README.md">Volver al índice</a></span>
-  <span><a href="08-control-trafico-firewall.md">Siguiente →</a></span>
-</div>
+<table style="width: 100%; border: none;">
+  <tr>
+    <td style="text-align: left; border: none; padding: 0;">
+      <a href="06-acceso-servicios.md">← Anterior</a>
+    </td>
+    <td style="text-align: center; border: none; padding: 0;">
+      <a href="../README.md">Volver al índice</a>
+    </td>
+    <td style="text-align: right; border: none; padding: 0;">
+      <a href="08-control-trafico-firewall.md">Siguiente →</a>
+    </td>
+  </tr>
+</table>

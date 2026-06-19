@@ -188,8 +188,16 @@ El Esquema Nacional de Seguridad define controles de seguridad agrupados en cate
 *Figura 12: Listado de reglas de ejemplo de la interfaz wgadmins en OPNsense. Se observa el icono de logging activado (la i en color azul que aparece debajo del triángulo verde) en todas las reglas, garantizando que todos los intentos no autorizados queden registrados.*
 
 <br>
-<div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-  <span><a href="11-suricata-deteccion.md">← Anterior</a></span>
-  <span><a href="../README.md">Volver al índice</a></span>
-  <span><a href="13-conclusiones.md">Siguiente →</a></span>
-</div>
+<table style="width: 100%; border: none;">
+  <tr>
+    <td style="text-align: left; border: none; padding: 0;">
+      <a href="11-suricata-deteccion.md">← Anterior</a>
+    </td>
+    <td style="text-align: center; border: none; padding: 0;">
+      <a href="../README.md">Volver al índice</a>
+    </td>
+    <td style="text-align: right; border: none; padding: 0;">
+      <a href="13-conclusiones.md">Siguiente →</a>
+    </td>
+  </tr>
+</table>

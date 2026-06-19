@@ -121,8 +121,16 @@ El portal muestra una página principal con información corporativa simulada y 
 Todas estas pruebas se pueden realizar desde el escritorio virtual a través de noVNC también para que sea más intuitivo y visual (usando el navegador por ejemplo).
 
 <br>
-<div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-  <span><a href="05-diferencias-entorno-real.md">← Anterior</a></span>
-  <span><a href="../README.md">Volver al índice</a></span>
-  <span><a href="07-pruebas-funcionales.md">Siguiente →</a></span>
-</div>
+<table style="width: 100%; border: none;">
+  <tr>
+    <td style="text-align: left; border: none; padding: 0;">
+      <a href="05-diferencias-entorno-real.md">← Anterior</a>
+    </td>
+    <td style="text-align: center; border: none; padding: 0;">
+      <a href="../README.md">Volver al índice</a>
+    </td>
+    <td style="text-align: right; border: none; padding: 0;">
+      <a href="07-pruebas-funcionales.md">Siguiente →</a>
+    </td>
+  </tr>
+</table>

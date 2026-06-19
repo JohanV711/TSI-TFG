@@ -80,6 +80,9 @@ Servidor FTP corporativo
 Acceso público al directorio /public 
 Para soporte: admin@empresa.local 
 EOF 
+
+echo "Configurado readme.txt"
+
 cat > /srv/ftp/public/config_backup.txt << 'EOF' 
 DB_HOST=192.168.58.10 
 DB_USER=root 
@@ -89,9 +92,12 @@ SMTP_USER=notificaciones@empresa.local
 SMTP_PASS=smtp2024! 
 EOF
 
+echo "configurado config_backup.txt"
+
 chmod -R 755 /srv/ftp/public
 
 systemctl restart apache2
+systemctl restart vsftpd
 
 echo "[dmz-server] Configuración completada."
 
