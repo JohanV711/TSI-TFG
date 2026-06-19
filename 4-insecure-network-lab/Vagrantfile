@@ -11,8 +11,8 @@ Vagrant.configure("2") do |config|
     kali.vm.network "private_network", ip: "100.70.9.10", 
       virtualbox__intnet: "net-externa"
     
-    #Puerto para noVNC y poder acceder desde http://localhost:8081
-    kali.vm.network "forwarded_port", guest: 8080, host: 8081
+    #Puerto para noVNC y poder acceder desde http://localhost:8082
+    kali.vm.network "forwarded_port", guest: 8082, host: 8082
     
     kali.vm.provider "virtualbox" do |vb|
       vb.name = "external-kali-mv"

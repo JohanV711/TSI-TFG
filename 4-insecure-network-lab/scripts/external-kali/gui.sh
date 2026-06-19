@@ -1,95 +1,91 @@
 #!/usr/bin/env bash
-# Interfaz gráfica ligera (XFCE) + noVNC para Kali atacante
 set -euo pipefail
 export DEBIAN_FRONTEND=noninteractive
 
-# Forzar DNS funcional para evitar cuelgues
+# Forzar DNS funcional 
 systemctl stop systemd-resolved 2>/dev/null || true
 systemctl disable systemd-resolved 2>/dev/null || true
 rm -f /etc/resolv.conf
 echo "nameserver 1.1.1.1" > /etc/resolv.conf
 echo "nameserver 1.0.0.1" >> /etc/resolv.conf
 
-echo "[gui] Instalando escritorio XFCE y herramientas VNC..."
-
+echo "[gui] Instalando escritorio XFCE y TigerVNC..."
 apt-get update -qq
 apt-get install -y -qq \
-  netdiscover \
-  hydra \
-  tcpdump \
-  wireshark-common \
-  dsniff \
-  nmap \
-  ettercap-text-only \
-  telnet \
-  ftp \
-  default-mysql-client \
-  enum4linux \
-  smbclient
+    xfce4 \
+    xfce4-goodies \
+    x11-xserver-utils \
+    dbus-x11 \
+    tigervnc-standalone-server \
+    novnc \
+    websockify
 
-# Auto-login del usuario vagrant en XFCE
-mkdir -p /etc/lightdm/lightdm.conf.d
-cat > /etc/lightdm/lightdm.conf.d/50-autologin.conf << 'LIGHTDM'
-[Seat:*]
-autologin-user=vagrant
-autologin-user-timeout=0
-LIGHTDM
+# Directorio VNC para vagrant
+mkdir -p /home/vagrant/.vnc
 
-# Evitar bloqueos de sesión y salvapantallas
-sudo -u vagrant bash << 'USER'
-mkdir -p ~/.config/xfce4/xfconf/xfce-perchannel-xml
-cat > ~/.config/xfce4/xfconf/xfce-perchannel-xml/xfce4-power-manager.xml << 'EOF'
-<?xml version="1.0" encoding="UTF-8"?>
-<channel name="xfce4-power-manager" version="1.0">
-  <property name="dpms-enabled" type="bool" value="false"/>
-</channel>
+# xstartup: lanza XFCE limpio sin session manager ni dbus previos
+cat > /home/vagrant/.vnc/xstartup << 'EOF'
+#!/bin/bash
+unset SESSION_MANAGER
+unset DBUS_SESSION_BUS_ADDRESS
+exec startxfce4
 EOF
-USER
+chmod +x /home/vagrant/.vnc/xstartup
 
-# Servicio de sistema para x11vnc (depende de lightdm)
-cat > /etc/systemd/system/x11vnc.service << 'UNIT'
+# Password VNC: "vagrant" (acceso solo desde localhost vía forwarded_port)
+echo "vagrant" | sudo -u vagrant vncpasswd -f > /home/vagrant/.vnc/passwd
+chmod 600 /home/vagrant/.vnc/passwd
+chown -R vagrant:vagrant /home/vagrant/.vnc
+
+# Servicio VNC (TigerVNC en :1 → puerto 5901)
+cat > /etc/systemd/system/vncserver.service << 'UNIT'
 [Unit]
-Description=VNC server for X11 (x11vnc)
-After=lightdm.service
-Requires=lightdm.service
+Description=TigerVNC server (XFCE) para vagrant
+After=network.target
 
 [Service]
 Type=simple
-ExecStartPre=/bin/sleep 3
-ExecStart=/usr/bin/x11vnc -forever -shared -display :0 -auth /var/run/lightdm/root/:0 -rfbport 5900 -o /var/log/x11vnc.log
+User=vagrant
+ExecStartPre=/bin/sh -c '/usr/bin/vncserver -kill :1 > /dev/null 2>&1 || true'
+ExecStart=/usr/bin/vncserver :1 \
+    -geometry 1280x800 \
+    -depth 24 \
+    -localhost no \
+    -rfbauth /home/vagrant/.vnc/passwd \
+    -xstartup /home/vagrant/.vnc/xstartup \
+    -fg
+ExecStop=/usr/bin/vncserver -kill :1
 Restart=on-failure
-User=root
+RestartSec=5
 
 [Install]
 WantedBy=multi-user.target
 UNIT
 
-# Servicio de sistema para noVNC (puerto 8080)
+# Servicio noVNC (websockify :8082 → localhost:5901)
 cat > /etc/systemd/system/novnc.service << 'UNIT'
 [Unit]
-Description=noVNC proxy
-After=network.target x11vnc.service
-Requires=x11vnc.service
+Description=noVNC proxy (websockify 8082 → VNC 5901)
+After=network.target vncserver.service
+Requires=vncserver.service
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/websockify --web=/usr/share/novnc 8080 localhost:5900
+ExecStart=/usr/bin/websockify --web=/usr/share/novnc 8082 localhost:5901
 Restart=on-failure
+RestartSec=3
 User=root
 
 [Install]
 WantedBy=multi-user.target
 UNIT
 
-# Habilitar e iniciar todo
 systemctl daemon-reload
-systemctl enable x11vnc 2>/dev/null || true
-systemctl enable lightdm 2>/dev/null || true
-systemctl enable novnc   2>/dev/null || true
+systemctl enable vncserver novnc
 
-systemctl start lightdm 2>/dev/null || true
-sleep 5  # Esperar a que la sesión gráfica esté lista
-systemctl start x11vnc  2>/dev/null || true
-systemctl start novnc   2>/dev/null || true
+# Arrancar en orden con espera entre ellos
+systemctl start vncserver
+sleep 5
+systemctl start novnc
 
-echo "[gui] Entorno gráfico listo. Accede en http://localhost:8081/vnc.html"
+echo "[gui] Entorno gráfico listo. Accede en http://localhost:8082/vnc.html (password: vagrant)"

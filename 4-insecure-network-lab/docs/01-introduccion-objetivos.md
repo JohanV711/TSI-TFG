@@ -53,8 +53,16 @@ Todos los escenarios son autocontenidos y no requieren conectividad a Internet (
 El laboratorio se compone de cuatro máquinas virtuales interconectadas mediante redes internas de VirtualBox (`intnet`). La siguiente documentación detalla:
 
 <br>
-<div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-  <span></span>
-  <span><a href="../README.md">Volver al índice</a></span>
-  <span><a href="02-topologia-maquinas.md">Siguiente →</a></span>
-</div>
+<table style="width: 100%; border: none;">
+  <tr>
+    <td style="text-align: left; border: none; padding: 0;">
+      <a href="../README.md">← Volver al índice</a>
+    </td>
+    <td style="text-align: center; border: none; padding: 0;">
+      <span style="color: #666;">·</span>
+    </td>
+    <td style="text-align: right; border: none; padding: 0;">
+      <a href="02-topologia-maquinas.md">Siguiente →</a>
+    </td>
+  </tr>
+</table>

@@ -71,8 +71,16 @@ La siguiente tabla resume el comportamiento esperado del firewall entre las dist
 | Todos los hosts internos | Instagram, Facebook (dominios) | DNS | **B** (0.0.0.0) | Bloqueo DNS en Unbound |
 
 <br>
-<div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-  <span><a href="01-introduccion-contexto.md">← Anterior</a></span>
-  <span><a href="../README.md">Volver al índice</a></span>
-  <span><a href="03-requisitos-previos.md">Siguiente →</a></span>
-</div>
+<table style="width: 100%; border: none;">
+  <tr>
+    <td style="text-align: left; border: none; padding: 0;">
+      <a href="01-introduccion-objetivos.md">← Anterior</a>
+    </td>
+    <td style="text-align: center; border: none; padding: 0;">
+      <a href="../README.md">Volver al índice</a>
+    </td>
+    <td style="text-align: right; border: none; padding: 0;">
+      <a href="03-despliegue-acceso.md">Siguiente →</a>
+    </td>
+  </tr>
+</table>

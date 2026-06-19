@@ -1,6 +1,6 @@
-# 4-insecure-network-lab — Laboratorio de red corporativa insegura
+# 4-insecure-network-lab — Laboratorio de red insegura
 
-Laboratorio práctico de ciberseguridad que reproduce una arquitectura de red corporativa con **malas prácticas de configuración reales**, desplegada automáticamente con Vagrant + VirtualBox.  
+Laboratorio práctico de ciberseguridad que reproduce una arquitectura de red con **malas prácticas de configuración reales**, desplegada automáticamente con Vagrant + VirtualBox.  
 El objetivo es ejecutar y comprender los ataques descritos en el capítulo 7 de la memoria, observando en un entorno controlado las consecuencias de cada error de seguridad.
 
 > **!** Uso exclusivamente educativo en entornos aislados. No conectar a redes de producción.
@@ -39,4 +39,3 @@ El objetivo es ejecutar y comprender los ataques descritos en el capítulo 7 de 
 5. [Escenarios de ataque](docs/05-escenarios-ataque.md)
 6. [Solución de problemas](docs/06-solucion-problemas.md)
 7. [Conclusiones](docs/07-conclusiones.md)
-8. [Advertencia legal](docs/08-advertencia-legal.md)

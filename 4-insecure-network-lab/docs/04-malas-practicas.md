@@ -154,7 +154,7 @@ write_enable=YES
 
 ### 4.2.8 SSH inseguro
 
-Mismas malas prácticas que en el servidor interno (ver §4.3.1): `PermitRootLogin yes`, `PasswordAuthentication yes`, sin limitación de intentos.
+Mismas malas prácticas que en el servidor interno (ver 4.3.1): `PermitRootLogin yes`, `PasswordAuthentication yes`, sin limitación de intentos.
 
 **Consecuencia directa**: puerta trasera adicional si el ataque web o Telnet falla.
 
@@ -263,4 +263,19 @@ routes:
 
 El servidor interno conoce cómo alcanzar la DMZ y la red externa.
 
-**Consecuencia directa**: no solo el atacante puede llegar a la red interna, sino que, una vez comprometido el servidor interno, este puede iniciar conexiones hacia la DMZ o hacia el exterior para exfiltrar datos (ver §5.6).
+**Consecuencia directa**: no solo el atacante puede llegar a la red interna, sino que, una vez comprometido el servidor interno, este puede iniciar conexiones hacia la DMZ o hacia el exterior para exfiltrar datos (ver 5.6).
+
+<br>
+<table style="width: 100%; border: none;">
+  <tr>
+    <td style="text-align: left; border: none; padding: 0;">
+      <a href="03-despliegue-acceso.md">← Anterior</a>
+    </td>
+    <td style="text-align: center; border: none; padding: 0;">
+      <a href="../README.md">Volver al índice</a>
+    </td>
+    <td style="text-align: right; border: none; padding: 0;">
+      <a href="05-escenarios-ataque.md">Siguiente →</a>
+    </td>
+  </tr>
+</table>

@@ -25,7 +25,8 @@ libapache2-mod-php \
 smbclient \
 dsniff \
 netdiscover \
-openssh-server
+openssh-server \
+nmap
 
 #Malas prácticas para Apache
 cat > /etc/apache2/conf-available/insecure.conf << 'EOF'

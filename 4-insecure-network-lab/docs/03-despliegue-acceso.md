@@ -81,14 +81,14 @@ Para las máquinas Ubuntu, las credenciales inseguras adicionales (`root:root`, 
 
 ### Puertos y redirección
 
-La VM levanta `x11vnc` en el puerto `5900` y noVNC (`websockify`) en el puerto `8080`.
+La VM levanta `x11vnc` en el puerto `5900` y noVNC (`websockify`) en el puerto `8082`.
 
-El `Vagrantfile` redirige el puerto `8080` de la VM al puerto `8081` del host mediante `forwarded_port`.
+El `Vagrantfile` redirige el puerto `8082` de la VM al puerto `8082` del host mediante `forwarded_port`.
 
 Por tanto, la URL de acceso es:
 
 ```text
-http://localhost:8081/vnc.html
+http://localhost:8082/vnc.html
 ```
 
 ### Verificación del servicio gráfico
@@ -110,3 +110,18 @@ sudo systemctl restart novnc
 ```
 
 Una vez abierto el escritorio, el usuario encontrará Firefox, una terminal y las herramientas de ataque preinstaladas listas para ejecutar los escenarios del documento 5.
+
+<br>
+<table style="width: 100%; border: none;">
+  <tr>
+    <td style="text-align: left; border: none; padding: 0;">
+      <a href="02-topologia-maquinas.md">← Anterior</a>
+    </td>
+    <td style="text-align: center; border: none; padding: 0;">
+      <a href="../README.md">Volver al índice</a>
+    </td>
+    <td style="text-align: right; border: none; padding: 0;">
+      <a href="04-malas-practicas.md">Siguiente →</a>
+    </td>
+  </tr>
+</table>
