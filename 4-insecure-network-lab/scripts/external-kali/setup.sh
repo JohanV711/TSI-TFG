@@ -58,6 +58,11 @@ nmcli connection up "Wired connection 1" || true
 sleep 2
 nmcli connection up "lab-externa" || true
 
+# Forzar rutas por si nmcli no las aplicó
+sleep 3
+ip route add 192.168.57.0/24 via 100.70.9.1 dev eth1 2>/dev/null || true
+ip route add 192.168.58.0/24 via 100.70.9.1 dev eth1 2>/dev/null || true
+
 # Verificar que la IP se asignó correctamente
 echo "=== Configuración de red aplicada ==="
 ip addr show eth1

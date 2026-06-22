@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS user_credentials (
 
 INSERT IGNORE INTO user_credentials (username, password, service, last_login) VALUES
 ('admin', 'admin123', 'vpn', '2024-11-01 09:23:00'),
-('jmartinez', 'juan2024', 'email', '2024-11-03 14:05:00'),
+('jmartinez', 'juan2026', 'email', '2024-11-03 14:05:00'),
 ('mlopez', 'Maria@Finanzas', 'intranet', '2024-10-28 11:30:00'),
 ('copias', 'backup', 'ftp', '2024-09-15 03:00:00');
 

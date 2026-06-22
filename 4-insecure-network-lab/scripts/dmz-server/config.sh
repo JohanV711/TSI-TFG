@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 #Contenido web básico de prueba y FTP inseguro
+exec > >(tee /var/log/config-sh.log) 2>&1
 
 set -euo pipefail
 
@@ -75,26 +76,26 @@ chmod -R 755 /var/www/html
 
 
 #Ficheros en el FTP.
-cat > /srv/ftp/public/readme.txt << 'EOF' 
-Servidor FTP corporativo 
-Acceso público al directorio /public 
-Para soporte: admin@empresa.local 
-EOF 
-
-echo "Configurado readme.txt"
-
-cat > /srv/ftp/public/config_backup.txt << 'EOF' 
-DB_HOST=192.168.58.10 
-DB_USER=root 
-DB_PASS= 
-DB_NAME=corporativedb 
-SMTP_USER=notificaciones@empresa.local 
-SMTP_PASS=smtp2024! 
+cat > /srv/ftp/public/readme.txt << 'EOF'
+Servidor FTP corporativo
+Acceso público al directorio /public
+Para soporte: admin@empresa.local
 EOF
 
-echo "configurado config_backup.txt"
+cat > /srv/ftp/public/config_backup.txt << 'EOF'
+DB_HOST=192.168.58.10
+DB_USER=root
+DB_PASS=
+DB_NAME=corporativedb
+SMTP_USER=notificaciones@empresa.local
+SMTP_PASS=smtp2024!
+EOF
 
-chmod -R 755 /srv/ftp/public
+chmod 644 /srv/ftp/public/readme.txt
+chmod 644 /srv/ftp/public/config_backup.txt
+chown ftp:ftp /srv/ftp/public/readme.txt
+chown ftp:ftp /srv/ftp/public/config_backup.txt
+chmod 777 /srv/ftp/public
 
 systemctl restart apache2
 systemctl restart vsftpd
