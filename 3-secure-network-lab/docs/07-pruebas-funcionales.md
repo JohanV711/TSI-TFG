@@ -59,7 +59,7 @@ curl --connect-timeout 5 http://172.16.0.10
 nc -zv 192.168.20.10 3306
 ```
 
-**Resultado esperado:** Timeout.
+**Resultado esperado:** Timeout. Ctrl+C si no se detiene.
 
 **Explicación:** La VLAN20 no es accesible desde la WAN. El mismo principio de denegación por defecto se aplica.
 
@@ -188,6 +188,16 @@ curl http://172.16.0.10
 curl -k --connect-timeout 5 https://192.168.10.1
 ```
 
+O en `http://localhost:8081/vnc.html` con contraseña `vagrant` cada vez que se solicite credenciales (pulsar en la pantalla si se queda en negro) se puede comprobar con el navegador Firefox a introducir https://192.168.10.1 y aparecerá la interfaz gráfica web de OPNSense. Las credenciales se recuerdan aqui:
+
+```bash
+root
+```
+**Contraseña**:
+```bash
+Contraseniarobustademinimo16caracteres!.
+```
+
 **Resultado esperado:** HTML de la página de login de OPNsense.
 
 **Explicación:** La regla `VPN_ADMINS → RED_GESTION` permite el acceso. `-k` omite la verificación del certificado autofirmado.
@@ -262,8 +272,8 @@ curl http://172.16.0.10/empleados
 
 ```json
 [
-  {"id":1,"nombre":"Johan Vargas","departamento":"Seguridad IT"},
-  {"id":2,"nombre":"Cristian Alvarez","departamento":"Desarrollo"},
+  {"departamento":"Seguridad IT", "id":1,"nombre":"Johan Vargas","departamento":"Seguridad IT"},
+  {"departamento":"Desarrollo", "id":2,"nombre":"Cristian Alvarez","departamento":"Desarrollo"},
   ...
 ]
 ```
