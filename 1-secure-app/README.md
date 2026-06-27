@@ -26,14 +26,14 @@ Puedes levantar el proyecto mediante dos vías equivalentes:
 ### Opción A: Desde la raíz principal del TFG (Recomendado)
 
 ```bash
-# Estando en /home/mangoadmin/TFG/
+# Estando en /TSI-TFG/
 make bloque1
 ```
 
 ### Opción B: Manualmente desde este directorio
 
 ```bash
-# Estando en /home/mangoadmin/TFG/1-secure-app/
+# Estando en /TSI-TFG/1-secure-app/
 docker compose up -d --build
 ```
 
@@ -55,10 +55,4 @@ Para detener la aplicación manteniendo las imágenes y los datos en la base de 
 
 ```bash
 docker compose down
-```
-
-Para destruir el laboratorio por completo (borrando volúmenes y reseteando la base de datos al estado inicial de fábrica), ejecuta desde la raíz principal:
-
-```bash
-make destroy1
 ```

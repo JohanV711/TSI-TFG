@@ -6,7 +6,7 @@ El laboratorio se distribuye como parte del repositorio del TFG. El primer paso 
 
 ```bash
 git clone https://github.com/JohanV711/TSI-TFG.git
-cd TFG/3-secure-network-lab
+cd TSI-TFG/3-secure-network-lab
 ```
 
 Dentro de este directorio se encuentran:
