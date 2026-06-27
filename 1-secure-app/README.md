@@ -9,7 +9,7 @@ Consiste en una plataforma web completa y funcional de galería fotográfica con
 - **Base de Datos:** PostgreSQL 16 *(aislamiento de red, claves UUIDv4 y borrado en cascada)*.
 - **Perímetro:** Nginx *(proxy inverso, TLS 1.2/1.3 estricto y cabeceras OWASP)*.
 
-> **Nota sobre la documentación:** El diseño técnico, los diagramas de flujo y la justificación teórica de cada control implementado están desarrollados en la **Memoria Oficial del TFG** (Capítulo 4). Adicionalmente, el propio código fuente de este directorio contiene comentarios explicativos en los puntos críticos de bastionado.
+> **Nota sobre la documentación:** El diseño técnico, los diagramas de flujo y la justificación teórica de cada control implementado están desarrollados en la **Memoria Oficial del TFG** (Capítulo 4). Adicionalmente, el propio código fuente de este directorio contiene comentarios explicativos.
 
 ---
 

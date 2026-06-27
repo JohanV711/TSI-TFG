@@ -58,7 +58,6 @@ Vagrant.configure("2") do |config|
 
   # External Kali — atacante simulado en WAN
   # IP: 91.168.50.10
-  # Acceso navegador via noVNC: http://localhost:6080/vnc.html
   config.vm.define "external-kali" do |kali|
     kali.vm.box          = "kalilinux/rolling"
     kali.vm.hostname     = "external-kali"
