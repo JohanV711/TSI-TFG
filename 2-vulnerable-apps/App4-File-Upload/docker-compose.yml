@@ -1,0 +1,8 @@
+version: '3.8'
+
+services:
+  lab_upload:
+    build: .
+    container_name: lab-upload-backend
+    ports:
+      - "8004:8004"

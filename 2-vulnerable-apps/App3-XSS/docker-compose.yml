@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  db_xss_vulnerable:
+    image: postgres:16
+    container_name: lab-xss-postgres
+    environment:
+      POSTGRES_USER: admin_xss
+      POSTGRES_PASSWORD: password_inseguro
+      POSTGRES_DB: lab_xss_db
+    ports:
+      - "5436:5432"  # Puerto 5436 exclusivo para el tablón de anuncios
+    volumes:
+      - lab_xss_data:/var/lib/postgresql/data
+
+  backend_xss_laboratorio:
+    build: .
+    container_name: lab-xss-backend
+    ports:
+      - "8003:8003"
+    environment:
+      - DATABASE_URL=postgresql://admin_xss:password_inseguro@db_xss_vulnerable:5432/lab_xss_db
+    depends_on:
+      - db_xss_vulnerable
+
+volumes:
+  lab_xss_data:

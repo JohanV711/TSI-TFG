@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  db_tienda_vulnerable:
+    image: postgres:16
+    container_name: lab-tienda-postgres
+    environment:
+      POSTGRES_USER: admin_tienda
+      POSTGRES_PASSWORD: password_inseguro
+      POSTGRES_DB: lab_tienda_db
+    ports:
+      - "5435:5432"  # Puerto 5435 exclusivo para el saldo virtual
+    volumes:
+      - lab_tienda_data:/var/lib/postgresql/data
+
+  backend_tienda_laboratorio:
+    build: .
+    container_name: lab-tienda-backend
+    ports:
+      - "8002:8002"
+    environment:
+      - DATABASE_URL=postgresql://admin_tienda:password_inseguro@db_tienda_vulnerable:5432/lab_tienda_db
+    depends_on:
+      - db_tienda_vulnerable
+
+volumes:
+  lab_tienda_data:

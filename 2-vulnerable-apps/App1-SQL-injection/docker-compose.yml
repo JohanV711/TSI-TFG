@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  # Servicio 1: La base de datos dedicada y vulnerable para este laboratorio
+  db_laboratorio:
+    image: postgres:16
+    container_name: lab-sqli-postgres
+    environment:
+      POSTGRES_USER: admin_vulnerable
+      POSTGRES_PASSWORD: password_inseguro
+      POSTGRES_DB: lab_sql_db
+    ports:
+      - "5434:5432" # Usamos el puerto 5434 en Windows para evitar CUALQUIER conflicto con tus otras apps
+    volumes:
+      - lab_sqli_data:/var/lib/postgresql/data
+
+  # Servicio 2: Tu aplicación FastAPI (App 1)
+  backend_laboratorio:
+    build: .
+    container_name: lab-sqli-backend
+    ports:
+      - "8001:8001"
+    environment:
+      # Apuntamos directamente al servicio "db_laboratorio" con plenos poderes (root/admin)
+      - DATABASE_URL=postgresql://admin_vulnerable:password_inseguro@db_laboratorio:5432/lab_sql_db
+    depends_on:
+      - db_laboratorio
+
+volumes:
+  lab_sqli_data:
