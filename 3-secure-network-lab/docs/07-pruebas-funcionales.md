@@ -428,6 +428,44 @@ curl -s ifconfig.me && echo
 
 **Explicación:** `external-kali` conserva su interfaz NAT (`eth0`) como ruta por defecto gracias a `never-default` en `eth1`. Esto le permite salir directamente a internet sin pasar por OPNsense, simulando un atacante externo real con su propia conectividad.
 
+### 7.7 Verificación del control DNS y bloqueo de dominios
+
+**Objetivo:** Confirmar que la redirección forzada de tráfico hacia Unbound y la denegación local de dominios son efectivas, incluso si el cliente intenta configurar manualmente un servidor DNS público de terceros para eludir las políticas.
+
+**Preparación:** Asegúrate de mantener activo un perfil VPN con salida exterior (por ejemplo, `wg-admins`):
+
+```bash
+sudo wg-quick up wg-admins
+```
+
+**Prueba 1: Denegación de dominio mediante el resolver corporativo**
+
+```bash
+nslookup instagram.com 10.10.1.1
+```
+
+**Resultado esperado:**
+
+```text
+Server: 10.10.1.1
+Address: 10.10.1.1#53
+
+Name: instagram.com
+Address: 0.0.0.0
+```
+
+**Explicación:** La regla de **Host Override** implementada en el servicio Unbound local intercepta la resolución de la entidad de destino y sus subdominios, devolviendo intencionadamente la dirección IP nula `0.0.0.0` para abortar el intento de conexión a nivel de red.
+
+**Prueba 2: Intento de evasión forzando un resolver externo**
+
+```bash
+nslookup instagram.com 8.8.8.8
+```
+
+**Resultado esperado:** Exactamente la misma resolución nula que en la prueba anterior (`Address: 0.0.0.0`), pese a haber dirigido la consulta explícitamente a los servidores públicos de Google (`8.8.8.8`).
+
+**Explicación:** El cortafuegos OPNsense intercepta cualquier datagrama UDP/TCP dirigido al puerto 53 mediante una regla de traducción de direcciones de destino (Port Forward) y lo redirige de forma imperceptible al motor Unbound local. Esto evidencia que el control de acceso a nivel de aplicación (DNS) está estrechamente vinculado a la seguridad perimetral de la red.
+
 <br>
 <table style="width: 100%; border: none;">
   <tr>
