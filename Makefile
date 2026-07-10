@@ -29,7 +29,7 @@ bloque1:
 	@echo "=================================================="
 	@if [ ! -f 1-secure-app/.env ]; then \
 		echo "[+] Archivo .env no encontrado. Generando automáticamente desde .env.example..."; \
-		cp 1-secure-app/.example 1-secure-app/.env; \
+		cp 1-secure-app/.env.example 1-secure-app/.env; \
 	fi
 	@cd 1-secure-app && docker compose up -d --build
 	@echo ""
