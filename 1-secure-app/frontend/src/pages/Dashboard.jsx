@@ -246,7 +246,7 @@ const Dashboard = () => {
                             onClick={(e) => { e.stopPropagation(); handleDeletePhotoRequest(img.photo_id); }}
                             className="w-7 h-7 bg-white/20 backdrop-blur-sm border border-white/30 text-white text-xs flex items-center justify-center hover:bg-red-500/80 transition-colors rounded-full"
                           >
-                            X
+                            🗑
                           </button>
                         </div>
                       </div>
