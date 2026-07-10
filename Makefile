@@ -16,7 +16,7 @@ help:
 	@echo "make destroy1    - Elimina contenedores, volúmenes, BD e imágenes de Docker"
 	@echo "make destroy3    - Destruye las MVs y limpia metadatos de Vagrant (Bloque 3)"
 	@echo "make destroy4    - Destruye las MVs y limpia metadatos de Vagrant (Bloque 4)"
-	@echo "make destroy-all - Aplica tierra quemada sobre todo el proyecto"
+	@echo "make destroy-all - Elimina todo los bloques, sus dependencias y archivos asociados"
 	@echo "prune - Libera recursos"
 
 check-vagrant-plugins:
@@ -27,6 +27,10 @@ bloque1:
 	@echo "=================================================="
 	@echo "Desplegando Bloque 1 — Secure App (Docker Compose)"
 	@echo "=================================================="
+	@if [ ! -f 1-secure-app/.env ]; then \
+		echo "[+] Archivo .env no encontrado. Generando automáticamente desde .env.example..."; \
+		cp 1-secure-app/.example 1-secure-app/.env; \
+	fi
 	@cd 1-secure-app && docker compose up -d --build
 	@echo ""
 	@echo "=================================================="
