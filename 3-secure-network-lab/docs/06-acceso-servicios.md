@@ -20,7 +20,7 @@ sudo wg show
 
 Debe aparecer `latest handshake` reciente y bytes transferidos mayores que 0.
 
-3. Abrir el navegador dentro de `external-kali` y acceder a:
+3. Abrir el navegador dentro de `external-kali` ([http://localhost:8081/vnc.html](http://localhost:8081/vnc.html)) y acceder a:
 [https://192.168.10.1](https://192.168.10.1)
 
 4. Aceptar la advertencia de *su conexión no es privada*.

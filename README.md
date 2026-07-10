@@ -56,7 +56,8 @@ make help
 ### Bloque 1: Secure App
 - **Despliegue:** `make bloque1`  
   Tiempo estimado: ~2 minutos en la primera compilación.
-- **Acceso:** abre tu navegador en `https://localhost` y acepta el aviso de certificado TLS autofirmado.
+- **Acceso:** abre tu navegador en `https://localhost` o en `http://localhost`en  y acepta el aviso de certificado TLS autofirmado.
+- **Más detalles en [`./1-secure-app/README.md`](./1-secure-app/README.md)**
 - **Apagado rápido:** `make down1`
 - **Destrucción total:** `make destroy1`
 
@@ -70,8 +71,8 @@ make help
 - **Acceso y gestión:**
   - Entrar al directorio: `cd 3-secure-network-lab`
   - Acceder a la consola gráfica del atacante (External Kali) vía navegador en `http://localhost:8081/vnc.html` o entrar con `vagrant ssh external-kali` 
-    Credenciales y más detalles en el README local de la carpeta del bloque 3.
-- **Apagado rápido:** `make down3`
+    Credenciales y más detalles en el [`README local`](./3-secure-network-lab/readme.md) de la carpeta del bloque 3.
+- **Apagado rápido (puede tardar unos minutos):** `make down3`
 - **Destrucción total:** `make destroy3`
 
 ### Bloque 4: Insecure Network Lab
@@ -80,7 +81,7 @@ make help
 - **Acceso y auditoría:**
   - Entrar al directorio: `cd 4-insecure-network-lab`
   - Acceder a la consola gráfica del atacante (External Kali) vía navegador en `http://localhost:8082/vnc.html` o entrar con `vagrant ssh external-kali`
-    Más detalles en el README local de la carpeta del bloque 4.
+    Más detalles en el [`README local`](./4-insecure-network-lab/README.md) de la carpeta del bloque 4.
 - **Apagado rápido:** `make down4`
 - **Destrucción total:** `make destroy4`
 
