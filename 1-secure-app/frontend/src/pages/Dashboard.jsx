@@ -14,6 +14,8 @@ const Dashboard = () => {
 
   const [showCreateAlbum, setShowCreateAlbum] = useState(false);
   const [showUploadImage, setShowUploadImage] = useState(false);
+  
+  const [deleteConfirm, setDeleteConfirm] = useState({ show: false, type: '', id: null, message: '' });
 
   useEffect(() => {
     return () => {
@@ -92,20 +94,27 @@ const Dashboard = () => {
     }
   };
 
-  const handleDeletePhoto = async (photoId) => {
-    if (!window.confirm('¿Eliminar esta foto?')) return;
-    try {
-      await api.delete(`/photos/${photoId}`);
-      fetchAlbums();
-    } catch { setError('No se pudo eliminar la foto.'); }
+  const handleDeletePhotoRequest = (photoId) => {
+    setDeleteConfirm({ show: true, type: 'photo', id: photoId, message: '¿Estás seguro de que deseas eliminar esta fotografía de forma permanente?' });
   };
 
-  const handleDeleteAlbum = async (albumId) => {
-    if (!window.confirm('¿Eliminar álbum y todas sus fotos?')) return;
+  const handleDeleteAlbumRequest = (albumId) => {
+    setDeleteConfirm({ show: true, type: 'album', id: albumId, message: '¿Estás seguro de que deseas eliminar este álbum? Todas las fotos que contenga serán destruidas.' });
+  };
+
+  const executeDelete = async () => {
     try {
-      await api.delete(`/albums/${albumId}`);
+      if (deleteConfirm.type === 'photo') {
+        await api.delete(`/photos/${deleteConfirm.id}`);
+      } else if (deleteConfirm.type === 'album') {
+        await api.delete(`/albums/${deleteConfirm.id}`);
+      }
       fetchAlbums();
-    } catch { setError('Error al eliminar el álbum.'); }
+    } catch {
+      setError(`No se pudo eliminar el ${deleteConfirm.type === 'photo' ? 'archivo' : 'álbum'}.`);
+    } finally {
+      setDeleteConfirm({ show: false, type: '', id: null, message: '' });
+    }
   };
 
   const openModal = async (img) => {
@@ -123,7 +132,7 @@ const Dashboard = () => {
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden bg-gray-50">
-      {/* Fondo gradiente claro (idéntico a Login/Register) */}
+      {/* Fondo gradiente claro */}
       <svg
         className="fixed inset-0 w-full h-full -z-10"
         viewBox="0 0 1600 900"
@@ -206,7 +215,7 @@ const Dashboard = () => {
                     </span>
                   </div>
                   <button
-                    onClick={() => handleDeleteAlbum(album.album_id)}
+                    onClick={() => handleDeleteAlbumRequest(album.album_id)}
                     className="text-xs tracking-widest uppercase text-gray-400 hover:text-red-500 transition-colors"
                   >
                     Eliminar álbum
@@ -218,7 +227,8 @@ const Dashboard = () => {
                     {album.images.map(img => (
                       <div
                         key={img.photo_id}
-                        className="group relative overflow-hidden rounded-xl bg-gray-100 cursor-pointer shadow-sm"
+                        // CAMBIO APLICADO: Añadido "aspect-square" para que todas las fotos sean cuadradas y uniformes
+                        className="group relative overflow-hidden rounded-xl bg-gray-100 cursor-pointer shadow-sm aspect-square"
                         onClick={() => openModal(img)}
                       >
                         <img
@@ -233,10 +243,10 @@ const Dashboard = () => {
                             VER DETALLES
                           </span>
                           <button
-                            onClick={(e) => { e.stopPropagation(); handleDeletePhoto(img.photo_id); }}
+                            onClick={(e) => { e.stopPropagation(); handleDeletePhotoRequest(img.photo_id); }}
                             className="w-7 h-7 bg-white/20 backdrop-blur-sm border border-white/30 text-white text-xs flex items-center justify-center hover:bg-red-500/80 transition-colors rounded-full"
                           >
-                            ✕
+                            X
                           </button>
                         </div>
                       </div>
@@ -287,7 +297,7 @@ const Dashboard = () => {
           </div>
         </footer>
 
-        {/* Modal para crear álbum */}
+        {/* MODAL: Crear álbum */}
         {showCreateAlbum && (
           <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowCreateAlbum(false)}>
             <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 w-full max-w-md" onClick={(e) => e.stopPropagation()}>
@@ -309,7 +319,7 @@ const Dashboard = () => {
           </div>
         )}
 
-        {/* Modal para subir imagen */}
+        {/* MODAL: Subir imagen */}
         {showUploadImage && (
           <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setShowUploadImage(false)}>
             <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 w-full max-w-md" onClick={(e) => e.stopPropagation()}>
@@ -350,26 +360,59 @@ const Dashboard = () => {
           </div>
         )}
 
+        {/*MODAL: Confirmación de Eliminación */}
+        {deleteConfirm.show && (
+          <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setDeleteConfirm({ show: false, type: '', id: null, message: '' })}>
+            <div className="bg-white rounded-2xl shadow-xl border border-red-100 p-6 w-full max-w-sm transform transition-all" onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-600">
+                  <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                </div>
+                <h3 className="text-gray-900 text-lg font-bold">Confirmar acción</h3>
+              </div>
+              <p className="text-gray-500 text-sm mb-6 leading-relaxed">
+                {deleteConfirm.message}
+              </p>
+              <div className="flex justify-end gap-3">
+                <button 
+                  onClick={() => setDeleteConfirm({ show: false, type: '', id: null, message: '' })} 
+                  className="px-4 py-2 text-sm font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button 
+                  onClick={executeDelete} 
+                  className="px-4 py-2 text-sm font-semibold text-white bg-red-600 hover:bg-red-700 rounded-xl transition-colors"
+                >
+                  Eliminar
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Modal de imagen (lightbox) */}
         {selectedImage && (
           <div
-            className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-8"
+            className="fixed inset-0 z-[60] bg-black/90 backdrop-blur-md flex items-center justify-center p-8"
             onClick={() => setSelectedImage(null)}
           >
             <div className="relative flex flex-col items-center gap-4" onClick={(e) => e.stopPropagation()}>
               <button
                 onClick={() => setSelectedImage(null)}
-                className="absolute -top-10 right-0 text-xs tracking-widest uppercase text-white/70 hover:text-white transition-colors"
+                className="absolute -top-12 right-0 text-xs font-bold tracking-widest uppercase text-white/70 hover:text-white transition-colors p-2"
               >
                 Cerrar ✕
               </button>
               <img
                 src={selectedImage.fullBlobUrl || selectedImage.blobUrl || '/placeholder.jpg'}
                 alt={selectedImage.title}
-                className="max-w-[85vw] max-h-[80vh] object-contain rounded-xl border border-white/20"
+                className="max-w-[85vw] max-h-[80vh] object-contain rounded-xl shadow-2xl"
               />
               {selectedImage.title && (
-                <span className="text-xs tracking-widest uppercase text-white/70">
+                <span className="text-xs font-medium tracking-widest uppercase text-white/90 bg-black/50 px-4 py-1.5 rounded-full mt-2">
                   {selectedImage.title}
                 </span>
               )}

@@ -35,16 +35,15 @@ const handleRegister = async (e) => {
     } catch (err) {
       const errorDetail = err.response?.data?.detail;
       
-      // 1. Si Pydantic devuelve un Array de errores de validación (ej. email mal formado)
+      //Si Pydantic devuelve un Array de errores de validación (ej. email mal formado)
       if (Array.isArray(errorDetail)) {
         // Extraemos solo el mensaje (msg) del primer error de la lista
         setError(`Error de formato: ${errorDetail[0].msg}`);
       } 
-      // 2. Si es un error manual de tu backend (String) (ej. "El correo ya existe")
       else if (typeof errorDetail === 'string') {
         setError(errorDetail);
       } 
-      // 3. Fallback genérico por si se cae el servidor o no hay internet
+      //Fallback genérico por si se cae el servidor o no hay internet
       else {
         setError('Error en el registro. Inténtalo de nuevo.');
       }
@@ -94,7 +93,7 @@ const handleRegister = async (e) => {
                 )}
 
                 <form onSubmit={handleRegister} className="mt-4">
-                  {/* Campo Nombre – decorativo, no afecta al registro */}
+                  {/* Campo Nombre*/}
                   <div className="mb-2">
                     <label className="mb-1 block text-xs font-semibold">
                       Nombre
