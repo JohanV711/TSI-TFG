@@ -26,7 +26,6 @@ apt-get install -y -qq \
   sqlmap \
   dirb \
   gobuster \
-  metasploit-framework \
   python3-pip \
   hping3 || true
 
