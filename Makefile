@@ -77,8 +77,8 @@ destroy1:
 destroy3:
 	@echo ""
 	@echo "[!] Destruyendo Bloque 3 (Eliminando discos virtuales de VirtualBox)..."
-	@-cd 3-secure-network-lab && vagrant destroy -f
-	@rm -rf 3-secure-network-lab/.vagrant/
+	@-vagrant -C 3-secure-network-lab destroy -f 2>/dev/null || true
+	@rm -rf 3-secure-network-lab/.vagrant/ 2>/dev/null || true
 	@echo "[+] Bloque 3 purgado por completo."
 	@echo ""
 
