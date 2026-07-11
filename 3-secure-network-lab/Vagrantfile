@@ -41,16 +41,23 @@ Vagrant.configure("2") do |config|
       virtualbox__intnet: "net-lan",
       auto_config: false
 
-    fw.vm.provider "virtualbox" do |vb|
-      vb.name   = "snl-opensense"
-      vb.memory = 1500
-      vb.cpus   = 1
-      vb.gui    = false
-      vb.customize ["modifyvm", :id, "--audio", "none"]
-      vb.customize ["modifyvm", :id, "--usb", "off"]
-      vb.customize ["modifyvm", :id, "--natdnshostresolver1", "off"]
-      vb.customize ["modifyvm", :id, "--natdnsproxy1", "off"]
-    end
+fw.vm.provider "virtualbox" do |vb|
+  vb.name   = "snl-opensense"
+  vb.memory = 1500
+  vb.cpus   = 1
+  vb.gui    = false
+  vb.customize ["modifyvm", :id, "--audio", "none"]
+  vb.customize ["modifyvm", :id, "--usb", "off"]
+  vb.customize ["modifyvm", :id, "--natdnshostresolver1", "off"]
+  vb.customize ["modifyvm", :id, "--natdnsproxy1", "off"]
+
+  # En Windows el named pipe /tmp/opnsense-serial.sock no es válido
+  # Se desactiva el puerto serie solo en Windows para compatibilidad
+  if Vagrant::Util::Platform.windows?
+    vb.customize ["modifyvm", :id, "--uart1", "off"]
+    vb.customize ["modifyvm", :id, "--uartmode1", "disconnected"]
+  end
+end
 
     fw.vm.boot_timeout    = 5
     fw.ssh.connect_timeout = 5
