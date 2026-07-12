@@ -77,8 +77,16 @@ destroy1:
 destroy3:
 	@echo ""
 	@echo "[!] Destruyendo Bloque 3 (Eliminando discos virtuales de VirtualBox)..."
-	@-vagrant -C 3-secure-network-lab destroy -f 2>/dev/null || true
-	@rm -rf 3-secure-network-lab/.vagrant/ 2>/dev/null || true
+	@cd 3-secure-network-lab && vagrant destroy -f || true
+	@rm -rf 3-secure-network-lab/.vagrant/
+	@VBoxManage controlvm "snl-opensense" poweroff 2>/dev/null || true
+	@VBoxManage controlvm "snl-external-kali" poweroff 2>/dev/null || true
+	@VBoxManage controlvm "snl-dmz-server" poweroff 2>/dev/null || true
+	@VBoxManage controlvm "snl-vlan20-server" poweroff 2>/dev/null || true
+	@VBoxManage unregistervm "snl-opensense" --delete 2>/dev/null || true
+	@VBoxManage unregistervm "snl-external-kali" --delete 2>/dev/null || true
+	@VBoxManage unregistervm "snl-dmz-server" --delete 2>/dev/null || true
+	@VBoxManage unregistervm "snl-vlan20-server" --delete 2>/dev/null || true
 	@echo "[+] Bloque 3 purgado por completo."
 	@echo ""
 
