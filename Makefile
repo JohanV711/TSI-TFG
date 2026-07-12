@@ -1,4 +1,10 @@
 .PHONY: help check-vagrant-plugins bloque1 bloque2 bloque3 bloque4 down1 down3 down4 destroy1 destroy3 destroy4 destroy-all
+# Detectar VBoxManage en Windows (Git Bash) o Linux
+ifeq ($(OS),Windows_NT)
+    VBOXMANAGE := "/c/Program Files/Oracle/VirtualBox/VBoxManage.exe"
+else
+    VBOXMANAGE := VBoxManage
+endif
 
 help:
 	@echo "Comandos disponibles para el despliegue del TFG:"
@@ -76,17 +82,17 @@ destroy1:
 
 destroy3:
 	@echo ""
-	@echo "[!] Destruyendo Bloque 3 (Eliminando discos virtuales de VirtualBox)..."
+	@echo "[!] Destruyendo Bloque 3..."
 	@cd 3-secure-network-lab && vagrant destroy -f || true
 	@rm -rf 3-secure-network-lab/.vagrant/
-	@VBoxManage controlvm "snl-opensense" poweroff 2>/dev/null || true
-	@VBoxManage controlvm "snl-external-kali" poweroff 2>/dev/null || true
-	@VBoxManage controlvm "snl-dmz-server" poweroff 2>/dev/null || true
-	@VBoxManage controlvm "snl-vlan20-server" poweroff 2>/dev/null || true
-	@VBoxManage unregistervm "snl-opensense" --delete 2>/dev/null || true
-	@VBoxManage unregistervm "snl-external-kali" --delete 2>/dev/null || true
-	@VBoxManage unregistervm "snl-dmz-server" --delete 2>/dev/null || true
-	@VBoxManage unregistervm "snl-vlan20-server" --delete 2>/dev/null || true
+	@$(VBOXMANAGE) controlvm "snl-opensense" poweroff 2>/dev/null || true
+	@$(VBOXMANAGE) controlvm "snl-external-kali" poweroff 2>/dev/null || true
+	@$(VBOXMANAGE) controlvm "snl-dmz-server" poweroff 2>/dev/null || true
+	@$(VBOXMANAGE) controlvm "snl-vlan20-server" poweroff 2>/dev/null || true
+	@$(VBOXMANAGE) unregistervm "snl-opensense" --delete 2>/dev/null || true
+	@$(VBOXMANAGE) unregistervm "snl-external-kali" --delete 2>/dev/null || true
+	@$(VBOXMANAGE) unregistervm "snl-dmz-server" --delete 2>/dev/null || true
+	@$(VBOXMANAGE) unregistervm "snl-vlan20-server" --delete 2>/dev/null || true
 	@echo "[+] Bloque 3 purgado por completo."
 	@echo ""
 
