@@ -23,7 +23,7 @@ Consiste en una plataforma web completa y funcional de galería fotográfica con
 
 Puedes levantar el proyecto mediante dos vías equivalentes:
 
-### Opción A: Desde la raíz principal del TFG (Recomendado)
+### Opción A: Desde la raíz principal del TFG (recomendado)
 
 ```bash
 # Estando en /TSI-TFG/
@@ -43,7 +43,7 @@ docker compose up -d --build
 
 Una vez finalizado el proceso de compilación de los contenedores, la plataforma estará disponible en:
 
-- **URL:** `https://localhost`
+- **URL:** `https://localhost` o `http://localhost`
 
 > **Advertencia del navegador:** Dado que el contenedor de Nginx compila internamente certificados TLS autofirmados para garantizar que el laboratorio sea 100% local y autónomo, el navegador mostrará un aviso de "La conexión no es privada". Es el comportamiento esperado; haz clic en **Configuración avanzada → Acceder a localhost (no seguro)**.
 
@@ -55,4 +55,10 @@ Para detener la aplicación manteniendo las imágenes y los datos en la base de 
 
 ```bash
 docker compose down
+```
+
+o desde el directorio principal (/TSI-TFG/)
+
+```bash
+make down1
 ```
