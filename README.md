@@ -54,6 +54,7 @@ make help
 **No es recomendable desplegar los bloques simultáneamente ya que algunos bloques comparten puertos y consumiría muchos recursos de la máquina anfitriona.**
 
 ### Bloque 1: Secure App
+- Activar Docker
 - **Despliegue:** `make bloque1`  
   Tiempo estimado: ~2 minutos en la primera compilación.
 - **Acceso:** abre tu navegador en `https://localhost` o en `http://localhost`en  y acepta el aviso de certificado TLS autofirmado.
