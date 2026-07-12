@@ -23,11 +23,11 @@ Laboratorio práctico de ciberseguridad que reproduce una arquitectura de red co
 | Atacante         | Kali Linux (external‑kali + noVNC) |
 
 ## ¿Qué contiene el bloque 3?
-- configs: contiene
-- docs:
-- images: 
-- scripts:
-- Vagrantfile: 
+- configs: contiene un backup de la configuración del firewall OPNSense en formato xml 
+- docs: docuemtnación detallada que sirve de guía para los usuarios que quieran probar el proyecto.
+- images: capturas de pantalla para la documentación.
+- scripts: scripts de configuración que configura el sistema operativo de las máquinas virtuales para la automatización del depliegue.
+- Vagrantfile: archivo principal para la configuración y definición de recursos de hardware, interfaces, el sistema operativo, las redes y carpetas de las máquinas virtuales.
 
 
 ## Índice
