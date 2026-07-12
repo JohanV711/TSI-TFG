@@ -68,7 +68,7 @@ make help
 
 ### Bloque 3: Secure Network Lab
 - **Despliegue:** `make bloque3`  
-  Tiempo estimado: ~10-15 minutos descargando e instanciando las cajas.
+  Tiempo estimado: ~20-30 minutos.
 - **Acceso y gestión:**
   - Entrar al directorio: `cd 3-secure-network-lab`
   - Acceder a la consola gráfica del atacante (External Kali) vía navegador en `http://localhost:8081/vnc.html` o entrar con `vagrant ssh external-kali` 
