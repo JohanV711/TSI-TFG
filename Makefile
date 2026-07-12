@@ -68,10 +68,18 @@ down1:
 	@cd 1-secure-app && docker compose down
 
 down3:
-	@cd 3-secure-network-lab && vagrant halt
+	@cd 3-secure-network-lab && vagrant halt || true
+	@$(VBOXMANAGE) controlvm "snl-opensense" savestate 2>/dev/null || true
+	@$(VBOXMANAGE) controlvm "snl-external-kali" savestate 2>/dev/null || true
+	@$(VBOXMANAGE) controlvm "snl-dmz-server" savestate 2>/dev/null || true
+	@$(VBOXMANAGE) controlvm "snl-vlan20-server" savestate 2>/dev/null || true
 
 down4:
-	@cd 4-insecure-network-lab && vagrant halt
+	@cd 4-insecure-network-lab && vagrant halt || true
+	@$(VBOXMANAGE) controlvm "external-kali-mv" savestate 2>/dev/null || true
+	@$(VBOXMANAGE) controlvm "insecure-internal-vm" savestate 2>/dev/null || true
+	@$(VBOXMANAGE) controlvm "insecure-firewall" savestate 2>/dev/null || true
+	@$(VBOXMANAGE) controlvm "dmz-server-vm" savestate 2>/dev/null || true
 
 destroy1:
 	@echo ""
@@ -103,12 +111,23 @@ destroy3:
 destroy4:
 	@echo ""
 	@echo "[!] Destruyendo Bloque 4 (Eliminando discos virtuales de VirtualBox)..."
-	@cd 4-insecure-network-lab && vagrant destroy -f
+	@cd 4-insecure-network-lab && vagrant destroy -f || true
 	@rm -rf 4-insecure-network-lab/.vagrant/
+	@$(VBOXMANAGE) controlvm "external-kali-mv" poweroff 2>/dev/null || true
+	@$(VBOXMANAGE) controlvm "insecure-internal-vm" poweroff 2>/dev/null || true
+	@$(VBOXMANAGE) controlvm "insecure-firewall" poweroff 2>/dev/null || true
+	@$(VBOXMANAGE) controlvm "dmz-server-vm" poweroff 2>/dev/null || true
+	@$(VBOXMANAGE) unregistervm "external-kali-mv" --delete 2>/dev/null || true
+	@$(VBOXMANAGE) unregistervm "insecure-internal-vm" --delete 2>/dev/null || true
+	@$(VBOXMANAGE) unregistervm "insecure-firewall" --delete 2>/dev/null || true
+	@$(VBOXMANAGE) unregistervm "dmz-server-vm" --delete 2>/dev/null || true
+	@echo "[!] Eliminando boxes descargadas del Bloque 4..."
+	@vagrant box remove kalilinux/rolling --all 2>/dev/null || true
+	@vagrant box remove ubuntu/jammy64 --all 2>/dev/null || true
 	@echo "[+] Bloque 4 purgado por completo."
 	@echo ""
 
-destroy-all: destroy1 destroy3 destroy4
+destroy-all: destroy1 destroy2 destroy3 destroy4
 	@echo "=================================================="
 	@echo "Todo limpio"
 	@echo "=================================================="
