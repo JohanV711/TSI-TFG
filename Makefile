@@ -93,6 +93,10 @@ destroy3:
 	@$(VBOXMANAGE) unregistervm "snl-external-kali" --delete 2>/dev/null || true
 	@$(VBOXMANAGE) unregistervm "snl-dmz-server" --delete 2>/dev/null || true
 	@$(VBOXMANAGE) unregistervm "snl-vlan20-server" --delete 2>/dev/null || true
+	@echo "[!] Eliminando boxes descargadas del Bloque 3..."
+	@vagrant box remove snl-opensense/snl-opensense-configured --all 2>/dev/null || true
+	@vagrant box remove kalilinux/rolling --all 2>/dev/null || true
+	@vagrant box remove ubuntu/jammy64 --all 2>/dev/null || true
 	@echo "[+] Bloque 3 purgado por completo."
 	@echo ""
 
