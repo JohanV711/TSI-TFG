@@ -27,7 +27,7 @@ El proyecto se estructura en **cuatro bloques prácticos** diseñados bajo una m
 
 Para garantizar la reproducibilidad de todo el ecosistema, el sistema anfitrión debe contar con las siguientes herramientas instaladas:
 
-- **Git:** control de versiones y clonado del repositorio.
+- **Git:** control de versiones y clonado del repositorio, se recomienda usar la **terminal Git Bash**.
 - **Docker Desktop / Engine** (v24+): motor de contenerización e interfaz Compose para los Bloques 1 y 2.
 - **VirtualBox** (v6.1 o v7.0+): hipervisor de tipo 2 para virtualizar las topologías de red de los Bloques 3 y 4.
 - **Vagrant** (v2.3+): orquestador de infraestructura como código para instanciar las máquinas virtuales.
