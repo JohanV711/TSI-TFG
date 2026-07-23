@@ -2,7 +2,7 @@
 
 ## Diagrama de red
 
-*(`../../images/diagrama-bloque-4.drawio.png`)*
+(`../../images/diagrama-bloque-4.drawio.png`)
 
 La figura representa los tres segmentos de red del laboratorio, la máquina atacante externa y las dos zonas corporativas (DMZ e interna), todas interconectadas a través de un firewall que **no aplica ningún filtrado real**.
 
