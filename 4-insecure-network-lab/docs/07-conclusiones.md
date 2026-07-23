@@ -74,7 +74,7 @@ Este laboratorio contiene **configuraciones deliberadamente inseguras** diseñad
 <table style="width: 100%; border: none;">
   <tr>
     <td style="text-align: left; border: none; padding: 0;">
-      <a href="06-solucion-problemas.md">← Anterior</a>
+      <a href="05-escenarios-attaque.md">← Anterior</a>
     </td>
     <td style="text-align: center; border: none; padding: 0;">
       <a href="../README.md">Volver al índice</a>
