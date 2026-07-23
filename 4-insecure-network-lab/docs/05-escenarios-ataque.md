@@ -642,7 +642,7 @@ Todo ello sin que ningún sistema haya registrado la actividad, alertado al admi
       <a href="../README.md">Volver al índice</a>
     </td>
     <td style="text-align: right; border: none; padding: 0;">
-      <a href="06-solucion-problemas.md">Siguiente →</a>
+      <a href="06-conclusiones.md">Siguiente →</a>
     </td>
   </tr>
 </table>
