@@ -65,7 +65,7 @@ Este laboratorio contiene **configuraciones deliberadamente inseguras** diseñad
    Ninguna de las configuraciones aquí documentadas debe utilizarse en entornos reales. Hacerlo comprometería gravemente la seguridad de los sistemas.
 
 5. **Responsabilidad del usuario.**
-   El autor del TFG y la universidad no se hacen responsables del uso indebido de este laboratorio. Quien lo ejecute asume la plena responsabilidad de hacerlo en un entorno apropiado y conforme a la legislación vigente.
+   Los autores del TFG y la universidad no se hacen responsables del uso indebido de este laboratorio. Quien lo ejecute asume la plena responsabilidad de hacerlo en un entorno apropiado.
 
 6. **Cumplimiento legal.**
    El uso de las técnicas de ataque descritas en este documento contra sistemas sin autorización expresa del propietario es ilegal y puede constituir un delito según el Código Penal español (artículos 197, 264 y concordantes) y legislaciones internacionales.
