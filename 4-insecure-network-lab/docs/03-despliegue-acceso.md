@@ -95,7 +95,7 @@ Por tanto, la URL de acceso es:
 ```text
 http://localhost:8082/vnc.html
 ```
-Con la contraseña:
+Con la contraseña para noVNC y kali-linux:
 
 ```text
 vagrant
