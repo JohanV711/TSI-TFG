@@ -19,7 +19,7 @@ Los comandos se ejecutan desde el directorio raíz del laboratorio (`4-insecure-
 ### Primer despliegue
 
 ```bash
-# Acceder al directorio del laboratorio
+#¡IMPORTANTE! Acceder al directorio del laboratorio
 cd 4-insecure-network-lab/
 
 # Levantar todas las máquinas (el orden lo gestiona Vagrant)
