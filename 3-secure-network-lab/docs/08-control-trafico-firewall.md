@@ -53,7 +53,7 @@ nmap -sS -p 22,80,443 91.168.50.1
 - La IP de origen es `91.168.50.10`.
 - La regla que bloquea suele ser la regla por defecto (`Default deny / block rule`) o alguna de las reglas que hemos añadido a las interfaces para bloquear explícitamente tráfico.
 
-![Detalle del Live View filtrado por Action=block](images/image2.png)
+![Detalle del Live View filtrado por Action=block](../images/image2.png)
 
 *Figura 3: Detalle del Live View filtrado por Action=block. Se aprecian los intentos de conexión desde external-kali sin VPN hacia la DMZ y la VLAN de servidores, todos denegados y registrados.*
 
