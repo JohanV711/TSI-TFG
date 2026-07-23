@@ -69,14 +69,6 @@ nmap 192.168.57.10
 nmap -sV -sC -O -p- -T4 192.168.58.10
 ```
 
-**Salida esperada en la DMZ (192.168.57.10):**
-
-![Salida del comando nmap -sV -sC -O -p- -T4 192.168.57.10](../images/image1.png)
-
-**Salida esperada en el servidor interno (192.168.58.10):**
-
-![Salida del comando nmap -sV -sC -O -p- -T4 192.168.58.10](../images/image2.png)
-
 **¿Por qué funciona este escaneo?**
 
 - El firewall tiene políticas `ACCEPT` para tráfico entre todos los segmentos (4.1.1).
