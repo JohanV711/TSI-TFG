@@ -25,6 +25,11 @@ cd 4-insecure-network-lab/
 # Levantar todas las máquinas (el orden lo gestiona Vagrant)
 vagrant up
 ```
+O desde la raíz del repositorio
+```bash
+#En /TSI-TFG/
+make bloque4
+```
 
 Durante la primera ejecución, Vagrant descarga las boxes desde HashiCorp Cloud si no están ya en caché (aproximadamente 1.5 GB en total) y ejecuta los provisioners de cada VM. El tiempo estimado es de 15 a 30 minutos, en función de la velocidad de la conexión y del rendimiento del disco.
 
