@@ -1,10 +1,10 @@
-# 7. Conclusiones y advertencia legal
+# 6. Conclusiones y advertencia legal
 
-## 7.1 Conclusiones
+## 6.1 Conclusiones
 
 El **Bloque 4 — Insecure Network Lab** ha demostrado de forma práctica que un conjunto de malas prácticas de configuración, aparentemente aisladas, se encadenan para permitir el compromiso total de una infraestructura corporativa.
 
-### 7.1.1 Resumen del compromiso
+### 6.1.1 Resumen del compromiso
 
 Partiendo de una máquina atacante externa, se ha conseguido:
 
@@ -15,7 +15,7 @@ Partiendo de una máquina atacante externa, se ha conseguido:
 5. **Pivotar desde la DMZ** hasta el servidor interno, reutilizando credenciales.
 6. **Exfiltrar datos sensibles** (base de datos corporativa, archivos confidenciales) sin generar logs ni alertas.
 
-### 7.1.2 Contraste con el Bloque 3 (red segura)
+### 6.1.2 Contraste con el Bloque 3 (red segura)
 
 | Medida de seguridad | Bloque 3 (Seguro) | Bloque 4 (Inseguro) | Efectividad |
 |---------------------|-------------------|---------------------|-------------|
@@ -29,7 +29,7 @@ Partiendo de una máquina atacante externa, se ha conseguido:
 
 Cada ataque exitoso del Bloque 4 habría sido **bloqueado o detectado** por al menos una de las medidas implementadas en el Bloque 3.
 
-### 7.1.3 Lecciones aprendidas
+### 6.1.3 Lecciones aprendidas
 
 - **La seguridad en profundidad no es opcional.** Un solo fallo (firewall sin filtrado) puede ser suficiente para iniciar el compromiso, pero una cadena de fallos lo convierte en inevitable.
 - **El principio de mínimo privilegio debe aplicarse siempre.** MySQL sin contraseña, Samba como invitado y paneles de administración sin autenticación son regalos para el atacante.
@@ -38,13 +38,13 @@ Cada ataque exitoso del Bloque 4 habría sido **bloqueado o detectado** por al m
 - **Sin logs no hay trazabilidad.** La exfiltración de datos pasó completamente desapercibida.
 - **La educación y la validación continua de la configuración son la primera línea de defensa.** Muchas de estas malas prácticas existen en entornos reales por desconocimiento, prisas o falta de revisión.
 
-### 7.1.4 Aplicabilidad al TFG
+### 6.1.4 Aplicabilidad al TFG
 
 Este bloque proporciona la **evidencia empírica** que respalda el capítulo 7 de la memoria. Los escenarios ejecutados demuestran que las malas prácticas descritas teóricamente en el trabajo tienen consecuencias reales y medibles. Al contrastar ambos laboratorios (Bloque 3 y Bloque 4), el lector puede apreciar el valor tangible de cada medida de seguridad propuesta.
 
 ---
 
-## 7.2 Advertencia y limitaciones de uso
+## 6.2 Advertencia y limitaciones de uso
 
 ### ⚠️ Naturaleza del laboratorio
 
