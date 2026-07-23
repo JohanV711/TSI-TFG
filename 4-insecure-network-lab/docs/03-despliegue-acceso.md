@@ -95,7 +95,11 @@ Por tanto, la URL de acceso es:
 ```text
 http://localhost:8082/vnc.html
 ```
+Con la contraseña:
 
+```text
+vagrant
+```
 ### Verificación del servicio gráfico
 
 Para comprobar que el entorno está activo, se puede entrar por SSH a la Kali y ejecutar:
