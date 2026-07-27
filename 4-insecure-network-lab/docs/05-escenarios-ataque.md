@@ -23,11 +23,11 @@ ping -c 2 100.70.9.1
 # Verificar conectividad con la DMZ
 ping -c 2 192.168.57.10
 
-# Verificar conectividad con la red interna (debería responder)
+# Verificar conectividad con la red interna (debe responder)
 ping -c 2 192.168.58.10
 ```
 
-**Salida esperada**: los tres pings responden. Si alguno falla, repasar la sección 6.4 de solución de problemas.
+**Salida esperada**: los tres pings responden.
 
 Comprobar que las herramientas de ataque están disponibles:
 
