@@ -8,7 +8,7 @@ Para ejecutar el laboratorio se necesita un equipo (físico o servidor remoto) c
 |-----------|--------|-------------|
 | **VirtualBox** | 6.1 | 7.0 o superior |
 | **Vagrant** | 2.3 | 2.4 o superior |
-| **RAM libre** | 6 GB libres | 8 GB libres |
+| **RAM libre** | 8 GB libres | 12 GB libres |
 | **Espacio en disco** | 25 GB libres | 35 GB libres |
 | **Conexión a Internet** | Solo durante el primer `vagrant up` | — |
 
