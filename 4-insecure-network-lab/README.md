@@ -37,4 +37,4 @@ El objetivo es ejecutar y comprender los ataques descritos en el capítulo 7 de 
 3. [Despliegue y acceso](docs/03-despliegue-acceso.md)
 4. [Malas prácticas implementadas](docs/04-malas-practicas.md)
 5. [Escenarios de ataque](docs/05-escenarios-ataque.md)
-6. [Conclusiones](docs/07-conclusiones.md)
+6. [Conclusiones](docs/06-conclusiones.md)
