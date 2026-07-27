@@ -59,7 +59,7 @@ El laboratorio se compone de cuatro máquinas virtuales interconectadas mediante
       <a href="../README.md">← Volver al índice</a>
     </td>
     <td style="text-align: center; border: none; padding: 0;">
-      <span style="color: #666;">·</span>
+      <a href="../README.md">Volver al índice</a>
     </td>
     <td style="text-align: right; border: none; padding: 0;">
       <a href="02-topologia-maquinas.md">Siguiente →</a>
