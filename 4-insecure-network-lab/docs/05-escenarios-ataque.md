@@ -65,7 +65,7 @@ Ejecutar desde `external-kali`:
 # Escaneo rápido de la DMZ
 nmap 192.168.57.10
 
-# Escaneo completo de la red interna (versiones, SO, todos los puertos)
+# Escaneo completo de la red interna (versiones, SO, todos los puertos; puede tardar un rato)
 nmap -sV -sC -O -p- -T4 192.168.58.10
 ```
 
