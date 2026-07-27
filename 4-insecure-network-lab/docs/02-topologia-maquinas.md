@@ -14,8 +14,7 @@ La figura representa los tres segmentos de red del laboratorio, la máquina atac
 | DMZ | `net-dmz` | `192.168.57.0/24` | Zona desmilitarizada expuesta a la red externa. Contiene servicios públicos vulnerables. |
 | Interna | `net-interna` | `192.168.58.0/24` | Red corporativa con datos sensibles (MySQL, Samba). No debería ser accesible directamente, pero lo es. |
 
-Las tres redes son de tipo **red interna de VirtualBox (`intnet`)** y no tienen salida a Internet durante las prácticas. La única conectividad externa se produce a través de la interfaz NAT de Vagrant, usada exclusivamente durante el aprovisionamiento inicial para descargar paquetes.
-
+Las tres redes son de tipo **red interna de VirtualBox (`intnet`)**.
 ## Máquinas virtuales
 
 | VM | Box | IP | Red | RAM | vCPUs | Rol |
