@@ -21,8 +21,8 @@ Las tres redes son de tipo **red interna de VirtualBox (`intnet`)** y no tienen 
 | VM | Box | IP | Red | RAM | vCPUs | Rol |
 |------|------|------|------|------|------|------|
 | `external-kali` | `kalilinux/rolling` | `100.70.9.10` | `net-externa` | 2560 MB | 2 | Atacante externo con escritorio gráfico XFCE |
-| `firewall` | `ubuntu/jammy64` | `100.70.9.1` / `192.168.57.1` / `192.168.58.1` | Todas | 512 MB | 1 | Firewall vulnerable (router sin filtrado) |
-| `dmz-server` | `ubuntu/jammy64` | `192.168.57.10` | `net-dmz` | 512 MB | 1 | Apache + vsftpd + Telnet + SSH + phishing |
+| `firewall` | `ubuntu/jammy64` | `100.70.9.1` / `192.168.57.1` / `192.168.58.1` | Todas | 1024 MB | 1 | Firewall vulnerable (router sin filtrado) |
+| `dmz-server` | `ubuntu/jammy64` | `192.168.57.10` | `net-dmz` | 1024 MB | 1 | Apache + vsftpd + Telnet + SSH + phishing |
 | `internal-server` | `ubuntu/jammy64` | `192.168.58.10` | `net-interna` | 1024 MB | 1 | MySQL + Samba + SSH con datos sensibles |
 
 Todas las máquinas, salvo `external-kali`, usan **Ubuntu Server 22.04 LTS** como sistema base. La atacante se basa en la box oficial de **Kali Linux Rolling**, lo que garantiza que las herramientas de ataque están actualizadas.
