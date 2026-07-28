@@ -340,42 +340,7 @@ SMTP_PASS=smtp2024!
 
 ---
 
-### 5.2.3 Captura de credenciales Telnet en texto claro
-
-#### Contexto
-
-Telnet transmite toda la sesión, incluyendo nombres de usuario y contraseñas, en texto plano y sin cifrar. Cualquier dispositivo en la misma red que pueda interceptar el tráfico puede leer las credenciales directamente.
-
-En este laboratorio, el atacante puede capturar sus propias credenciales de prueba o esperar a que un usuario legítimo inicie sesión en el servidor Telnet.
-
-#### Captura pasiva con `tcpdump`
-
-Se necesitan dos terminales en `external-kali`: una para generar el tráfico Telnet y otra para capturarlo.
-
-**Terminal 1 (captura):**
-
-```bash
-sudo tcpdump -i eth1 -A -s0 port 23
-```
-
-**Terminal 2 (generación de tráfico):**
-
-```bash
-telnet 192.168.57.10
-# Iniciar sesión con ftpoperator / ftpoperator
-```
-
-**Interpretación**: el nombre de usuario y la contraseña aparecen en texto claro, carácter por carácter, en la salida de `tcpdump`. Esto demuestra que cualquier tráfico Telnet puede ser interceptado y leído sin necesidad de herramientas avanzadas de descifrado.
-
-#### Malas prácticas que habilitan este ataque
-
-- Uso de Telnet en lugar de SSH para acceso remoto.
-- Transmisión de credenciales sin cifrado.
-- Ausencia de segmentación que impida a un atacante en la red externa capturar tráfico de la DMZ.
-
----
-
-### 5.2.4 Phishing interno: captura de credenciales mediante página falsa
+### 5.2.3 Phishing interno: captura de credenciales mediante página falsa
 
 #### Contexto
 
