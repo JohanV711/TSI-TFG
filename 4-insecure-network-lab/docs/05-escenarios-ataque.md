@@ -2,6 +2,8 @@
 
 Este documento describe, en orden creciente de compromiso, los ataques que un actor malicioso puede ejecutar desde la máquina `external-kali` contra la infraestructura insegura del laboratorio.
 
+Se recomienda usar el escritorio virtual dentro de `http://localhost:8082/vnc.html`.
+
 Cada fase incluye:
 - **Contexto** del servicio o técnica utilizada.
 - **Comandos paso a paso** indicando desde qué máquina se ejecutan.
