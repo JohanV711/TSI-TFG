@@ -542,9 +542,11 @@ Una vez los archivos están en la DMZ, el atacante puede descargarlos desde `ext
 ```bash
 # Conectar al dmz-server con las credenciales ya conocidas
 ssh ftpoperator@192.168.57.10
+```
 
-#contraseña: ftpoperator
+contraseña: ftpoperator
 
+```bash
 # Dentro del dmz-server, verificar que los archivos están
 ls -lh /tmp/*.sql /tmp/*.tar.gz
 ```
