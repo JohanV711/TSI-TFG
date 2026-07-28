@@ -91,10 +91,10 @@ SMTP_USER=notificaciones@empresa.local
 SMTP_PASS=smtp2024!
 EOF
 
-chmod 644 /srv/ftp/public/readme.txt
-chmod 644 /srv/ftp/public/config_backup.txt
-chown ftp:ftp /srv/ftp/public/readme.txt
-chown ftp:ftp /srv/ftp/public/config_backup.txt
+chmod 755 /srv/ftp/public/readme.txt
+chmod 755 /srv/ftp/public/config_backup.txt
+chown root:root /srv/ftp/public/readme.txt
+chown root:root /srv/ftp/public/config_backup.txt
 chmod 777 /srv/ftp/public
 
 systemctl restart apache2
