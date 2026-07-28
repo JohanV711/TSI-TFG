@@ -354,7 +354,7 @@ El atacante no necesita montar ninguna infraestructura externa: el phishing se s
 
 **Ejecutar desde `external-kali`:**
 
-Lo recomendable para hacerlo más visual todo es hacerlo desde la interfaz gráfica del external-kali abriendo el navegador firefox y usar la URL http://192.168.57.10:8080 dentro de http://localhost:8082/vnc.html.
+Lo recomendable para hacerlo más visual todo es hacerlo desde la interfaz gráfica del external-kali abriendo el navegador firefox y usar la URL `http://192.168.57.10:8080` dentro de `http://localhost:8082/vnc.html`.
 
 ```bash
 # Ver la página de phishing
