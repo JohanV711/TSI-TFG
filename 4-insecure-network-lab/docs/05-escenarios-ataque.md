@@ -121,6 +121,7 @@ Ejecutar desde `external-kali`:
 
 ```bash
 # Acceso interactivo por Telnet al dmz-server
+cd ~/lab/captures
 telnet 192.168.57.10
 ```
 
