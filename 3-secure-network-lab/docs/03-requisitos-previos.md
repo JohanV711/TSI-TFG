@@ -77,7 +77,7 @@ El Vagrantfile crea cuatro redes internas que no son accesibles desde el anfitri
       <a href="02-topologia-red.md">← Anterior</a>
     </td>
     <td style="text-align: center; border: none; padding: 0;">
-      <a href="../README.md">Volver al índice</a>
+      <a href="../readme.md">Volver al índice</a>
     </td>
     <td style="text-align: right; border: none; padding: 0;">
       <a href="04-despliegue-lab.md">Siguiente →</a>
