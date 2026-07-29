@@ -25,6 +25,7 @@ def startup_populate():
     finally:
         db.close()
 
+#Obtiene la información y los puntos de un usuario específico
 @app.get("/usuario/{usuario_id}")
 def obtener_usuario(usuario_id: int, db: Session = Depends(get_db)):
     usuario = db.query(models.Usuario).filter(models.Usuario.id == usuario_id).first()
@@ -32,15 +33,14 @@ def obtener_usuario(usuario_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
     return {"username": usuario.username, "puntos_disponibles": usuario.puntos}
 
-# ❌ ENDPOINT VULNERABLE
+#Endpoint de compra vulnerable a manipulación de precios
 @app.post("/comprar/vulnerable")
 def comprar_vulnerable(request: schemas.CompraRequest, db: Session = Depends(get_db)):
     usuario = db.query(models.Usuario).filter(models.Usuario.id == request.usuario_id).first()
     if not usuario:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
 
-    # ❌ ERROR CRÍTICO DE LÓGICA DE NEGOCIO:
-    # Usamos 'request.precio' (enviado por el usuario) en lugar de buscar 'producto.precio_real' en la base de datos.
+    #Fallo de lógica: se confía en el precio enviado por el cliente en lugar del precio real de la base de datos
     precio_a_cobrar = request.precio
 
     if usuario.puntos < precio_a_cobrar:
@@ -49,10 +49,11 @@ def comprar_vulnerable(request: schemas.CompraRequest, db: Session = Depends(get
             detail=f"Puntos insuficientes. Necesitas {precio_a_cobrar} y tienes {usuario.puntos}"
         )
 
-    # Restamos el precio (si el precio es negativo, menos por menos es más, ¡así que sumará puntos!)
+    #Se resta el saldo. Si el cliente envía un precio negativo, se le sumarán puntos a su cuenta
     usuario.puntos -= precio_a_cobrar
     db.commit()
 
+    #Se devuelve el recibo de la compra
     return {
         "status": "Compra procesada con éxito",
         "producto_id": request.producto_id,
