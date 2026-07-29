@@ -114,7 +114,7 @@ ip route show default
       <a href="07-pruebas-funcionales.md">← Anterior</a>
     </td>
     <td style="text-align: center; border: none; padding: 0;">
-      <a href="../README.md">Volver al índice</a>
+      <a href="../readme.md">Volver al índice</a>
     </td>
     <td style="text-align: right; border: none; padding: 0;">
       <a href="09-vpn-wireguard.md">Siguiente →</a>
