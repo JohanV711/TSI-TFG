@@ -56,7 +56,7 @@ Esta arquitectura, aunque desplegada en un solo host gracias a la virtualizació
       <a href="../README.md">← Volver al índice</a>
     </td>
     <td style="text-align: center; border: none; padding: 0;">
-      <span style="color: #666;">·</span>
+      <a href="../README.md">Volver al índice</a>
     </td>
     <td style="text-align: right; border: none; padding: 0;">
       <a href="02-topologia-red.md">Siguiente →</a>
