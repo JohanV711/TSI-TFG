@@ -165,7 +165,7 @@ Esta mejora convertiría el laboratorio en un entorno completamente desatendido,
       <a href="12-logs-trazabilidad-ens.md">← Anterior</a>
     </td>
     <td style="text-align: center; border: none; padding: 0;">
-      <a href="../README.md">Volver al índice</a>
+      <a href="../readme.md">Volver al índice</a>
     </td>
     <td style="text-align: right; border: none; padding: 0;">
       <span style="color: #999;">Fin de la documentación</span>
