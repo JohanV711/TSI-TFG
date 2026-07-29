@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from .database import engine, get_db
 from . import models, schemas
 
+#Se crean las tablas de la base de datos automáticamente
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
@@ -11,6 +12,7 @@ app = FastAPI(
     description="Simulación de un foro comunitario que almacena y renderiza entradas de texto sin sanitizar."
 )
 
+#Se inicializa el foro con un comentario por defecto al arrancar la aplicación si está vacío
 @app.on_event("startup")
 def startup_populate():
     db = next(get_db())
@@ -21,7 +23,7 @@ def startup_populate():
     finally:
         db.close()
 
-# Endpoint 1: Publicar en el foro (Vulnerable porque no filtra ni limpia el contenido)
+#Endpoint vulnerable. Guarda el comentario en la base de datos sin filtrar ni sanitizar el contenido
 @app.post("/comentarios", response_model=schemas.ComentarioResponse)
 def crear_comentario(request: schemas.ComentarioCreate, db: Session = Depends(get_db)):
     nuevo_comentario = models.Comentario(usuario=request.usuario, contenido=request.contenido)
@@ -30,10 +32,13 @@ def crear_comentario(request: schemas.ComentarioCreate, db: Session = Depends(ge
     db.refresh(nuevo_comentario)
     return nuevo_comentario
 
+#Devuelve la lista de comentarios de la base de datos en formato JSON
 @app.get("/comentarios", response_model=list[schemas.ComentarioResponse])
 def listar_comentarios(db: Session = Depends(get_db)):
     return db.query(models.Comentario).all()
 
+#Endpoint vulnerable. Renderiza el HTML inyectando directamente los comentarios sin escapar los caracteres
+#esto permite la ejecución de código malicioso (XSS) en el navegador de quien visite la página
 @app.get("/foro-web", response_class=HTMLResponse)
 def ver_foro_en_navegador(db: Session = Depends(get_db)):
     comentarios = db.query(models.Comentario).all()
