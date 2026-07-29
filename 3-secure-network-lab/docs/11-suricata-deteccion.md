@@ -155,7 +155,7 @@ Por último, las alertas se conservan solo durante un periodo corto y no se env�
       <a href="10-dns-control-privacidad.md">← Anterior</a>
     </td>
     <td style="text-align: center; border: none; padding: 0;">
-      <a href="../README.md">Volver al índice</a>
+      <a href="../readme.md">Volver al índice</a>
     </td>
     <td style="text-align: right; border: none; padding: 0;">
       <a href="12-logs-trazabilidad-ens.md">Siguiente →</a>
