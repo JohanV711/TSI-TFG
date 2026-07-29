@@ -194,7 +194,7 @@ El Esquema Nacional de Seguridad define controles de seguridad agrupados en cate
       <a href="11-suricata-deteccion.md">← Anterior</a>
     </td>
     <td style="text-align: center; border: none; padding: 0;">
-      <a href="../README.md">Volver al índice</a>
+      <a href="../readme.md">Volver al índice</a>
     </td>
     <td style="text-align: right; border: none; padding: 0;">
       <a href="13-conclusiones.md">Siguiente →</a>
