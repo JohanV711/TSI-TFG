@@ -77,7 +77,7 @@ La siguiente tabla resume el comportamiento esperado del firewall entre las dist
       <a href="01-introduccion-contexto.md">← Anterior</a>
     </td>
     <td style="text-align: center; border: none; padding: 0;">
-      <a href="../README.md">Volver al índice</a>
+      <a href="../readme.md">Volver al índice</a>
     </td>
     <td style="text-align: right; border: none; padding: 0;">
       <a href="03-requisitos-previos.md">Siguiente →</a>
